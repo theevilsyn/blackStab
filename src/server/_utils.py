@@ -1,7 +1,7 @@
 from binascii import hexlify
 
 def recvbytes(conn, remains):
-    buf = ""
+    buf = b""
     while remains:
         data = conn.recv(remains)
         if not data:
