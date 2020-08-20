@@ -34,6 +34,7 @@ class VM:
         }
 
         return
+
     def create(self, funds, account, name, tag):
         if(not (funds > 100)):
             return 2
@@ -122,9 +123,9 @@ class VM:
             pass
         if(path.exists(path.join(self.region, account))):
             rmtree(path.join(self.region, account))
-            return 0 # successfully deleted the account
+            return 0 # successfully deleted all the VMs under the account
         else:
-            return 1 # user not found
+            return 1 # no VMs under the account
 
     def statusofVM(self, account, tag): #the vulnerable function
         if(not path.exists(path.join(self.region, account, tag))):
@@ -156,15 +157,17 @@ class VM:
         vms = []
         for r, d, f in walk(path.join(self.region)):
             for vm in f:
-               vms.append(vm) 
+               vms.append(vm)
+        del(r,d) # only decause `Code` highlights unused variables
         return '\n'.join(vms)
 
 class accounts:
     def __init__(self):
+        self.cnx = mysql.connector.connect(host="localhost",user=CONFIG['db_user'],password=CONFIG['db_pass'],database=CONFIG['database'])
         return
 
     def register(self, email, username, password):
-        cnx = mysql.connector.connect(host="localhost",user=CONFIG['db_user'],password=CONFIG['db_pass'],database=CONFIG['database'])
+        cnx = self.cnx
         cursor = cnx.cursor()
         cursor.execute("SELECT * from users where email='{}'".format(email))
         acc_match = cursor.fetchall()
@@ -173,19 +176,17 @@ class accounts:
         else:
             pass
         _register = ("INSERT INTO users "
-                    "(email, username, password) "
-                    "VALUES (%s, %s, %s)")
+                    "(email, username, password, credits) "
+                    "VALUES (%s, %s, %s, %s)")
         cursor.execute(_register, (email, username, password))
         cnx.commit()
-        cnx.close()
         return 0
 
     def check_login(self, email, password):
-        cnx = mysql.connector.connect(host="localhost",user=CONFIG['db_user'],password=CONFIG['db_pass'],database=CONFIG['database'])
+        cnx = self.cnx
         cursor = cnx.cursor()
         cursor.execute("SELECT * from users where email='{}'".format(email))
         acc_match = cursor.fetchall()
-        cnx.close()
         if(not len(acc_match)):
             return 1
         else:
@@ -196,8 +197,21 @@ class accounts:
             pass
         return 0
     
+    def showCredits(self, email):
+        cnx = self.cnx
+        cursor = cnx.cursor()
+        cursor.execute("SELECT credits from users where email='{}'".format(email))
+        credits = cursor.fetchall()
+        return credits
+
+    def useCredits(self, email, credits):
+        cnx = self.cnx
+        cursor = cnx.cursor()
+        cursor.execute("UPDATE users SET credits={} WHERE email='{}'".format(credits, email))
+        cnx.commit()
+
     def removeAccount(self, email, password):
-        cnx = mysql.connector.connect(host="localhost",user=CONFIG['db_user'],password=CONFIG['db_pass'],database=CONFIG['database'])
+        cnx = self.cnx
         cursor = cnx.cursor()
         cursor.execute("SELECT * from users where email='{}'".format(email))
         acc_match = cursor.fetchall()
@@ -213,5 +227,4 @@ class accounts:
                 "where email='{}'".format(email))
         cursor.execute(_remove)
         cnx.commit()
-        cnx.close()
         return 0

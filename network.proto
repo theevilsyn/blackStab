@@ -3,8 +3,6 @@ syntax = "proto3";
 message register { // from client to server
     string timestamp = 1; // always equal in length
     
-    int32 sequence_num = 2;
-    
     int32 function_len = 3;
     string function_name = 4;
     
@@ -28,14 +26,12 @@ message register { // from client to server
 
 message login { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
 
-    int32 username_len = 5;
-    string username = 6;
+    int32 email_len = 5;
+    string email = 6;
 
     int32 passwd_len = 7;
     string password = 8;
@@ -51,8 +47,6 @@ message login { // from client to server
 message viewSubscription{ // from client to server
     string timestamp = 1; // always equal in length
     
-    int32 sequence_num = 2;
-    
     int32 function_len = 3;
     string function_name = 4;
 
@@ -64,8 +58,6 @@ message viewSubscription{ // from client to server
 
 message createVM { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
@@ -86,8 +78,6 @@ message createVM { // from client to server
 
 message removeAccount { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
@@ -106,8 +96,6 @@ message removeAccount { // from client to server
 
 message RuleAddTCP { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
@@ -127,8 +115,6 @@ message RuleAddTCP { // from client to server
 
 message RuleAddUDP { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
@@ -148,8 +134,6 @@ message RuleAddUDP { // from client to server
 
 message UpScaleRAM { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
@@ -168,8 +152,6 @@ message UpScaleRAM { // from client to server
 
 message DownScaleRAM { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
@@ -188,8 +170,6 @@ message DownScaleRAM { // from client to server
 
 message UpScaleCPU { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
@@ -208,8 +188,6 @@ message UpScaleCPU { // from client to server
 
 message DownScaleCPU { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
@@ -228,8 +206,6 @@ message DownScaleCPU { // from client to server
 
 message DeleteVM { // from client to server
     string timestamp = 1; // always equal in length
-    
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
@@ -246,8 +222,6 @@ message DeleteVM { // from client to server
 message StatusVM { // from client to server
     int32 timestamp = 1;
 
-    int32 sequence_num = 2;
-
     int32 function_len = 3;
     string function_name = 4;
 
@@ -262,8 +236,6 @@ message StatusVM { // from client to server
 
 message ListAllMyVMs {
     int32 timestamp = 1;
-
-    int32 sequence_num = 2;
 
     int32 function_len = 3;
     string function_name = 4;
