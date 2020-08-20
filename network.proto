@@ -269,23 +269,8 @@ message ListAllMyVMs {
     string function_name = 4;
 
     /*
-    returns a bunch of datatypes
-    int32 A; A is the Number of VMs
-    Loop in A
-        1) int32 B length of VM tag
-        2) string of length B (VM Tag)
-        3) int32 C length of VM Name
-        4) string of length C (VM Name)
-        
-        5) int32 D - number of cores
-        6) int32 E - GB count of RAM
-        7) int32 F - number of TCP ports open
-        Loop in F
-            a) int32 H - value of TCP port
-        
-        8) int32 G - number of UDP ports open
-        Loop in G
-            a) int32 I - value of the UDP port
-        
+    returns either an integer or a string
+    ret -1 --> No VMs under the user account
+    ret X  --> X is the concatenation '\n' seperated VM tags
     */
 }
