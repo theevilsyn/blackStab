@@ -1,6 +1,6 @@
 from binascii import hexlify, unhexlify
 from shutil import rmtree 
-from os import mkdir, chdir, path, getcwd, remove, rmdir
+from os import mkdir, chdir, path, getcwd, remove, rmdir, listdir
 from dataclasses import dataclass
 
 @dataclass
@@ -104,3 +104,29 @@ class VM:
             return 0 # successfully deleted the account
         else:
             return 1 # user not found
+
+    def statusofVM(self, account, tag): #the vulnerable function
+        if(not path.exists(path.join(getcwd(), account, tag))):
+            data = "The VM with the tag {} does not exist".format(tag)
+            return data
+        else:
+            pass
+
+        vm = eval(unhexlify(open(path.join(getcwd(), account, tag)).read()))
+        data = """
+        VM Name: {}
+        VM Tag: {}
+        TCP Ports Open: {}
+        UDP Ports Open: {}
+        Specifications: Number of CPUs are {} and the RAM is {} GB
+        """.format(vm.name, vm.tag, str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
+        return data
+
+    def listmyVMs(self, account):
+        if(not path.exists(path.join(getcwd(), account))):
+            return -1
+        else:
+            pass
+        
+        vmtags = '\n'.join(listdir(path.join(getcwd(), account)))
+        return vmtags
