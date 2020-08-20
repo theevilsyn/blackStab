@@ -1,7 +1,14 @@
+from json import load
 from binascii import hexlify, unhexlify
-from shutil import rmtree 
+from shutil import rmtree
+import mysql.connector
+from mysql.connector import errorcode
 from os import makedirs, path, remove, listdir, walk
 from dataclasses import dataclass
+
+
+with open("config.json",'r') as file:
+  CONFIG = load(file)
 
 @dataclass
 class VMStruct:
@@ -14,7 +21,18 @@ class VMStruct:
 
 class VM:
     def __init__(self):
-        self.region = "/tmp/VMs"
+        self.region = CONFIG['region']
+        self.functions = {
+            "create": self.create,
+            "modifyFirewall": self.modifyFirewall,
+            "modifyShape": self.modifyShape,
+            "deleteVM": self.deleteVM,
+            "removeAccount": self.removeAccount,
+            "statusofVM": self.statusofVM,
+            "listmyVMs": self.listmyVMs,
+            "masterlist": self.masterlist
+        }
+
         return
     def create(self, funds, account, name, tag):
         if(not (funds > 100)):
@@ -38,6 +56,7 @@ class VM:
         if(operation == 0):
             if(not (port in eval("vm.{}Ports".format(proto)))):
                 eval("vm.{}Ports".format(proto)).append(port)
+                eval("vm.{}Ports".format(proto)).sort()
                 open(path.join(self.region, account, tag), 'w').write(hexlify(str(vm).encode()).decode())
                 return 0
             else:
@@ -139,3 +158,60 @@ class VM:
             for vm in f:
                vms.append(vm) 
         return '\n'.join(vms)
+
+class accounts:
+    def __init__(self):
+        return
+
+    def register(self, email, username, password):
+        cnx = mysql.connector.connect(host="localhost",user=CONFIG['db_user'],password=CONFIG['db_pass'],database=CONFIG['database'])
+        cursor = cnx.cursor()
+        cursor.execute("SELECT * from users where email='{}'".format(email))
+        acc_match = cursor.fetchall()
+        if(len(acc_match)):
+            return -1 # email already teken
+        else:
+            pass
+        _register = ("INSERT INTO users "
+                    "(email, username, password) "
+                    "VALUES (%s, %s, %s)")
+        cursor.execute(_register, (email, username, password))
+        cnx.commit()
+        cnx.close()
+        return 0
+
+    def check_login(self, email, password):
+        cnx = mysql.connector.connect(host="localhost",user=CONFIG['db_user'],password=CONFIG['db_pass'],database=CONFIG['database'])
+        cursor = cnx.cursor()
+        cursor.execute("SELECT * from users where email='{}'".format(email))
+        acc_match = cursor.fetchall()
+        cnx.close()
+        if(not len(acc_match)):
+            return 1
+        else:
+            pass
+        if(not (acc_match[0][2] == password)):
+            return 2
+        else:
+            pass
+        return 0
+    
+    def removeAccount(self, email, password):
+        cnx = mysql.connector.connect(host="localhost",user=CONFIG['db_user'],password=CONFIG['db_pass'],database=CONFIG['database'])
+        cursor = cnx.cursor()
+        cursor.execute("SELECT * from users where email='{}'".format(email))
+        acc_match = cursor.fetchall()
+        if(not len(acc_match)):
+            return 1
+        else:
+            pass
+        if(not (acc_match[0][2] == password)):
+            return 2
+        else:
+            pass   
+        _remove = ("DELETE FROM users "
+                "where email='{}'".format(email))
+        cursor.execute(_remove)
+        cnx.commit()
+        cnx.close()
+        return 0

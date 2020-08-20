@@ -1,0 +1,6 @@
+{
+"region": "/tmp/VMs",
+"database": "blackStab",
+"db_user": "username",
+"db_pass": "password"
+}
