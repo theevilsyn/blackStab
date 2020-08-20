@@ -96,7 +96,7 @@ message RuleAddTCP { // from client to server
     string vmtag = 6;
     
     int32 port = 7;
-    int32 status = 8; // 0 to add ;-; and 1 to close 
+    int32 operation = 8; // 0 to open ;-; and 1 to close 
     /*
     returns int32
     ret 0 --> Successfully Opened/Closed the port
@@ -117,7 +117,7 @@ message RuleAddUDP { // from client to server
     string vmtag = 6;
 
     int32 port = 7;
-    int32 status = 8; // 0 to add ;-; and 1 to close 
+    int32 operation = 8; // 0 to add ;-; and 1 to close 
     /*
     returns int32
     ret 0 --> Successfully Opened/Closed the port
