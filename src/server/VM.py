@@ -1,5 +1,6 @@
 from binascii import hexlify, unhexlify
-from os import mkdir, chdir, path, getcwd
+from shutil import rmtree 
+from os import mkdir, chdir, path, getcwd, remove, rmdir
 from dataclasses import dataclass
 
 @dataclass
@@ -13,7 +14,7 @@ class VMStruct:
 
 class VM:
     def create(self, funds, account, name, tag):
-        if(not funds):
+        if(not (funds > 100)):
             return 2
         if(not path.exists(path.join(getcwd(), account))):
             mkdir(account)
@@ -29,8 +30,9 @@ class VM:
         if(not path.exists(path.join(getcwd(), account, tag))):
             return 2
         else:
-            vm = eval(unhexlify(open(path.join(getcwd(), account, tag)).read()))
+            pass
         
+        vm = eval(unhexlify(open(path.join(getcwd(), account, tag)).read()))
         if(operation == 0):
             if(not (port in eval("vm.{}Ports".format(proto)))):
                 eval("vm.{}Ports".format(proto)).append(port)
@@ -84,3 +86,21 @@ class VM:
             exec("vm.{} -= count".format(resource))
             open(path.join(getcwd(), account, tag), 'w').write(hexlify(str(vm).encode()).decode())
             return 0
+
+    def deleteVM(self, account, tag):
+        if(not path.exists(path.join(getcwd(), account, tag))):
+            return 1
+        else:
+            remove(path.join(path.join(getcwd(), account, tag)))
+            return 0
+
+    def removeAccount(self, account, challenge):
+        if(not challenge):
+            return 2 # incorrect password
+        else:
+            pass
+        if(path.exists(path.join(getcwd(), account))):
+            rmtree(account)
+            return 0 # successfully deleted the account
+        else:
+            return 1 # user not found
