@@ -92,9 +92,6 @@ message removeAccount { // from client to server
     int32 function_len = 3;
     string function_name = 4;
 
-    int32 username_len = 5;
-    string username = 6;
-
     int32 passwd_len = 7;
     string password = 8;
     
