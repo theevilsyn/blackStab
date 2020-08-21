@@ -107,7 +107,7 @@ def client_thread(conn, addr):
                 tag = recvbytes(conn, tag_len)
                 operation = int(recvbytes(conn, 4)) #0 for upscale; 1 for downscale
                 count = int(recvbytes(conn, 4))
-                _credits = account.showCredits(email=email)
+                _credits = account.showCredits(email=email.decode())
                 response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='ram', count=count, operation=operation)
                 conn.send(str(response).ljust(4).encode())
                             
@@ -117,7 +117,7 @@ def client_thread(conn, addr):
                 tag = recvbytes(conn, tag_len)
                 operation = int(recvbytes(conn, 4))
                 count = int(recvbytes(conn, 4))
-                _credits = account.showCredits(email=email)
+                _credits = account.showCredits(email=email.decode())
                 response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='cpu', count=count, operation=operation)
                 conn.send(str(response).ljust(4).encode())
                         
@@ -132,7 +132,7 @@ def client_thread(conn, addr):
                 logger.info("{} requested {} function".format(addr[0], action))
                 password_len = int(recvbytes(conn, 4))
                 password = recvbytes(conn, password_len)
-                response = account.removeAccount(email=email, password=password)
+                response = account.removeAccount(email=email.decode(), password=password.decode())
                 vm.removeAccount(account=hexlify(email+password), challenge=True)
                 conn.send(str(response).ljust(4).encode())
                 if(response == 0):
@@ -153,7 +153,7 @@ def client_thread(conn, addr):
             
             elif(action == 'viewSubscription'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                credits_left = account.showCredits(email=email)
+                credits_left = account.showCredits(email=email.decode())
                 conn.send(str(credits_left).ljust(4).encode())
 
             elif(action == 'listallmyVMs'):

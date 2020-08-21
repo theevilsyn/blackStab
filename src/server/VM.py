@@ -74,7 +74,7 @@ class VM:
         """
         1GB RAM = 10$
         1 CPU = 40$
-        Base VM = 100$
+        Base VM = 150$
         Minimum RAM = 1GB
         Minimum CPU = 1
         """
