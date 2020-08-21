@@ -1,4 +1,15 @@
+import logging
 from binascii import hexlify
+
+
+logger = logging.getLogger('blackStab')
+logger.setLevel(logging.DEBUG)
+
+ch = logging.FileHandler('server.log')
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 def recvbytes(conn, remains):
     buf = b""
@@ -20,8 +31,8 @@ def register(conn, account):
     password_len = int(recvbytes(conn, 4))
     password = recvbytes(conn, password_len)
 
-    _register = account.register(email=email, username=username, password=password)
-    conn.send(str(_register).ljust(4))
+    _register = account.register(email=email.decode(), username=username.decode(), password=password.decode())
+    conn.send(str(_register).ljust(4).encode())
 
 def login(conn, account):
     email_len = int(recvbytes(conn, 4))
@@ -44,3 +55,4 @@ def createvm(conn, vm, account, email, password):
     balance = account.showCredits
     response = vm.create(funds=balance, account=hexlify(email+password), name=vmname, tag=tag)
     conn.send(str(response).ljust(4))
+    logger("Created VM {} for {}".format(tag, email))

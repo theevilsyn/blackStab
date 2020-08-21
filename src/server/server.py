@@ -4,10 +4,6 @@ from binascii import hexlify, unhexlify
 from _thread import start_new_thread
 from VM import VM, VMStruct, accounts
 
-############
-##  TODO  ##
-############
-# Implement timestamp and logging #
 
 HOST = ''
 PORT = 9999
@@ -16,23 +12,22 @@ make_field = lambda data: str(len(data)).ljust(4) + data
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 except socket.error as msg:
-    print("Could not create socket. Error: " + str(msg))
+    logger.info("Could not create socket. Error: " + str(msg))
     exit()
 
-print("[-] Socket Created")
+logger.info("Socket Created")
 
 try:
     s.bind((HOST, PORT))
-    print("[-] Socket Bound to port " + str(PORT))
+    logger.info("Socket Bound to port " + str(PORT))
 except socket.error as msg:
-    print("Bind Failed. Error: {}".format(msg))
+    logger.info("Bind Failed. Error: {}".format(msg))
     exit()
 
 s.listen(10)
-print("Listening...")
 
 
-def client_thread(conn):
+def client_thread(conn, a):
     vm = VM()
     account = accounts()
     actions = vm.functions
@@ -41,13 +36,18 @@ def client_thread(conn):
     
     action_code = int(recvbytes(conn, 4))
     if(action_code == 1): # register
+        logger.info("{} requested register function".format(addr))
         register(conn, account)
 
     elif(action_code == 2): # login
         email, password = login(conn, account)
+        logger.info("{} logged in to {}".format(addr,email))
+    else:
+        conn.close()
     while True:
         action = int(recvbytes(conn, 4))
         if(action == 1337): # bye bye received
+            logger.info("Bye Bye requested")
             conn.close()
             break
         elif(action == 0): # wants to call a function
@@ -58,9 +58,11 @@ def client_thread(conn):
             else:
                 pass
             if(action == 'create'):
+                logger.info("{} requested {} function".format(addr, action))
                 createvm(conn, vm, account, email, password)
             
             elif(action == 'ruleAddTCP'):
+                logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, tag_len)
                 port = int(recvbytes(conn, 5)) # receive 5 bytes because max number 65535
@@ -69,6 +71,7 @@ def client_thread(conn):
                 conn.send(str(response).ljust(4))
             
             elif(action == 'ruleAddUDP'):
+                logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, tag_len)
                 port = int(recvbytes(conn, 5)) # receive 5 bytes because max number 65535
@@ -77,6 +80,7 @@ def client_thread(conn):
                 conn.send(str(response).ljust(4))
                 
             elif(action == 'upScaleMemory'):
+                logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, 4)
                 count = int(recvbytes(conn, 4))
@@ -85,6 +89,7 @@ def client_thread(conn):
                 conn.send(str(response).ljust(4))
             
             elif(action == 'downScaleMemory'):
+                logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, 4)
                 count = int(recvbytes(conn, 4))
@@ -93,6 +98,7 @@ def client_thread(conn):
                 conn.send(str(response).ljust(4))
                 
             elif(action == 'upScaleCPU'):
+                logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, 4)
                 count = int(recvbytes(conn, 4))
@@ -101,6 +107,7 @@ def client_thread(conn):
                 conn.send(str(response).ljust(4))
             
             elif(action == 'downScaleCPU'):
+                logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, 4)
                 count = int(recvbytes(conn, 4))
@@ -109,12 +116,14 @@ def client_thread(conn):
                 conn.send(str(response).ljust(4))
             
             elif(action == 'deleteVM'):
+                logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, tag_len)
                 response = vm.deleteVM(account=hexlify(email+password), tag=tag)
                 conn.send(str(response).ljust(4))
 
             elif(action == 'deleteAccount'):
+                logger.info("{} requested {} function".format(addr, action))
                 password_len = int(recvbytes(conn, 4))
                 password = recvbytes(conn, password_len)
                 response = account.removeAccount(email=email, password=password)
@@ -122,6 +131,7 @@ def client_thread(conn):
                 conn.send(str(response).ljust(4))
             
             elif(action == 'statusofmyVM'):
+                logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, tag_len)
 
@@ -130,10 +140,12 @@ def client_thread(conn):
                 conn.send(status)
             
             elif(action == 'viewSubscription'):
+                logger.info("{} requested {} function".format(addr, action))
                 credits_left = account.showCredits(email=email)
                 conn.send(str(credits_left).ljust(4))
 
             elif(action == 'listallmyVMs'):
+                logger.info("{} requested {} function".format(addr, action))
                 all_my_vms = vm.listmyVMs(account=hexlify(email, password))
                 if(all_my_vms == -1):
                     conn.send(str(-1).ljust(4))
@@ -143,6 +155,7 @@ def client_thread(conn):
                     conn.send(all_my_vms)
 
             elif(action == 'noonecallsme'):
+                logger.info("{} requested {} function".format(addr, action))
                 alltags = vm.masterlist()
                 conn.send(str(len(alltags)).ljust(4))
                 conn.send(alltags)
@@ -153,8 +166,8 @@ def client_thread(conn):
 
 while True:
     conn, addr = s.accept()
-    print("[-] Connected to " + addr[0] + ":" + str(addr[1]))
+    logger.info("Connected to " + addr[0] + ":" + str(addr[1]))
 
-    start_new_thread(client_thread, (conn,))
+    start_new_thread(client_thread, (conn,addr[0]))
 
 s.close()

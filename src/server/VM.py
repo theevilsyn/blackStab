@@ -178,7 +178,7 @@ class accounts:
         _register = ("INSERT INTO users "
                     "(email, username, password, credits) "
                     "VALUES (%s, %s, %s, %s)")
-        cursor.execute(_register, (email, username, password))
+        cursor.execute(_register, (email, username, password, 1000))
         cnx.commit()
         return 0
 
