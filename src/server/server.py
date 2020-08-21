@@ -110,7 +110,7 @@ def client_thread(conn, addr):
                 _credits = account.showCredits(email=email.decode())                
                 response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='ram', count=count, operation=operation)
                 conn.send(str(response).ljust(4).encode())
-                if(response == 0 and operation == 0):
+                if(response == 0 and operation == 1):
                     account.useCredits(email=email.decode(), credits=count*30)
                             
             elif(action == 'scaleCPU'):
@@ -122,7 +122,7 @@ def client_thread(conn, addr):
                 _credits = account.showCredits(email=email.decode())                
                 response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='cpu', count=count, operation=operation)
                 conn.send(str(response).ljust(4).encode())
-                if(response == 0 and operation == 0):
+                if(response == 0 and operation == 1):
                     account.useCredits(email=email.decode(), credits=count*70)
                         
             elif(action == 'deleteVM'):
