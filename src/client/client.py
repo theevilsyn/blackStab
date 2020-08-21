@@ -9,14 +9,277 @@ def menu(io):
     5. ListMyVMs
     6. View Subscription
     7. Delete Account
+    8. Exit
     """)
 
     try:
+        choice = int(input())
+        if(choice == 1):
+            createvm(io)
+        elif(choice == 2):
+            modifyvm(io)
+        elif(choice == 3):
+            deletevm(io)
+        elif(choice == 4):
+            vmstatus(io)
+        elif(choice == 5):
+            listmyvms(io)
+        elif(choice == 6):
+            viewsubscription(io)
+        elif(choice == 7):
+            deleteacc(io)
+        elif(choice == 8):
+            _exit(io)
         pass
     except KeyboardInterrupt:
-        print("Exiting on your request")
-        io.send(b"1337")
-        io.close()
+        _exit(io)
+
+def _exit(io):
+    print("See You Again!!")
+    io.send(b'1337')
+    io.close()
+    exit()
+
+def deleteacc(io):
+    data = str(0).ljust(4)
+    data += 'deleteAccount'
+    password = input("For security reasons, please enter your password: ")
+    data += str(password).ljust(4)
+    data += password
+    io.send(data)
+    response = int(io.recv(4))
+    if(response == 2):
+        print("You entered a wrong password.")
+        menu(io)
+    elif(response == 0):
+        print("Successfully Removed your Account, Bye!")
+
+def viewsubscription(io):
+    data = str(0).ljust(4)
+    data += 'viewSubscription'
+    io.send(data.encode())
+    _credits = int(io.recv(4))
+    print("You have {} credits left in your account".format(_credits))
+    menu(io)
+
+def listmyvms(io):
+    data = str(0).ljust(4)
+    data += str(len('listallmyVMs')).ljust(4)
+    data += 'listallmyVMs'
+    io.send(data.encode())
+    count = int(io.recv(4))
+    if(count == 0):
+        print("You have 0 VMs associated to your account")
+        menu(io)
+    else:
+        vms = io.recv(count)
+        print(vms)
+        menu(io)
+
+def vmstatus(io):
+    data = str(0).ljust(4)
+    data += 'statusofmyVM'
+    vm_tag = input("VM Tag: ")
+    data += str(len(vm_tag)).ljust(4)
+    data += vm_tag
+    io.send(data.encode())
+    data_len = int(io.recv(4))
+    status = io.recv(data_len)
+    print(status)
+    print("\n\n")
+    menu(io)
+
+def deletevm(io):
+    data = str(0).ljust(4)
+    data += str(len('deleteVM')).ljust(4)
+    data += 'deleteVM'
+    vm_tag = input("VM Tag: ")
+    data += str(len(vm_tag)).ljust(4)
+    data += vm_tag
+    response = int(io.recv(4))
+    if(response == 1):
+        print("VM with the requested tag not found")
+        menu(io)
+    else:
+        print("Successfully deleted the requested VM")
+        menu(io)
+
+def modifyvm(io):
+    data = str(0).ljust(4)
+    print("""
+    1. Edit Firewall Rules
+    2. Scale a VM
+    """)
+    choice = int(input())
+    if(choice == 1):
+        print("""
+        1. Open/Close a TCP Port
+        2. Open/Close a UDP Port
+        """)
+        proto = int(input())
+        if(proto == 1):
+            data += 'ruleAddTCP'
+            vm_tag = input("VM Tag: ")
+            data += str(len(vm_tag)).ljust(4)
+            data += vm_tag
+
+            port = int(input("Port: "))
+            data += str(len(port)).ljust(5)
+            
+            print("""
+            1. Open {} TCP Port
+            2. Close {} TCP Port
+            """.format(port, port))
+            operation = int(input()) 
+            data += str(operation).ljust(4)
+            io.send(data.encode())
+
+        elif(proto == 2):
+            data += 'ruleAddUDP'
+            vm_tag = input("VM Tag: ")
+            data += str(len(vm_tag)).ljust(4)
+            data += vm_tag
+
+            port = int(input("Port: "))
+            data += str(len(port)).ljust(5)
+            
+            print("""
+            1. Open {} UDP Port
+            2. Close {} UDP Port
+            """.format(port, port))
+            operation = int(input()) 
+            data += str(operation).ljust(4)
+            io.send(data.encode())
+        
+        else:
+            print("Undefined choice selected")
+            menu(io)
+    elif(choice == 2):
+        print("""
+        1. Add/Remove RAM
+        2. Upscale/Downscale CPU
+        """)
+        resource = int(input())
+        if(resource == 1):
+            data += 'scaleMemory'
+
+            vm_tag = input("VM Tag: ")
+            data += str(len(vm_tag)).ljust(4)
+            data += vm_tag
+
+            print("""
+            1. Add RAM
+            2. Remove RAM
+            """)
+            operation = int(input())
+            
+            if(operation == 1):
+                count = int(input("Enter how many GB should be added: "))
+                data += str(operation).ljust(4)
+                data += str(count).ljust(4)
+                io.send(data.encode())
+                response = io.recv(4)
+                if(response == 0):
+                    print("Successfully Added {} GB memory to your VM".format(count))
+                    menu(io)
+                elif(response == 1):
+                    print("Action Failed, Insufficient Funds to complete the operation.")
+                    menu(io)
+                elif(response == 2):
+                    print("Action Failed, VM with the requested tag not found.")
+                    menu(io)
+            elif(operation == 2):
+                count = int(input("Enter how many GB should be removed: "))
+                data += str(operation).ljust(4)
+                data += str(count).ljust(4)
+                io.send(data.encode())
+                response = int(io.recv(4))
+                if(response == 0):
+                    print("Successfully Removed {} GB memory to your VM".format(count))
+                    menu(io)
+                elif(response == 1):
+                    print("Action Failed, the requested quantity is greater than the current VM's RAM.")
+                    menu(io)
+                elif(response == 2):
+                    print("Action Failed, VM with the requested tag not found.")
+                    menu(io)
+            else:
+                print("Undefined option selected.")
+                menu(io)
+        elif(resource == 2):
+            data += 'scaleMemory'
+            print("""
+            1. Upscale CPU
+            2. Downscale CPU
+            """)
+
+            vm_tag = input("VM Tag: ")
+            data += str(len(vm_tag)).ljust(4)
+            data += vm_tag
+            
+            operation = int(input())
+            if(operation == 1):
+                count = int(input("Enter how many CPUs should be added: "))
+                data += str(operation).ljust(4)
+                data += str(count).ljust(4)
+                io.send(data.encode())
+                response = io.recv(4)
+                if(response == 0):
+                    print("Successfully Added {} CPUs to your VM".format(count))
+                    menu(io)
+                elif(response == 1):
+                    print("Action Failed, Insufficient Funds to complete the operation.")
+                    menu(io)
+                elif(response == 2):
+                    print("Action Failed, VM with the requested tag not found.")
+                    menu(io)
+            elif(operation == 2):
+                count = int(input("Enter how many CPUs should be removed: "))
+                data += str(operation).ljust(4)
+                data += str(count).ljust(4)
+                io.send(data.encode())
+                response = int(io.recv(4))
+                if(response == 0):
+                    print("Successfully Removed {} CPUs to your VM".format(count))
+                    menu(io)
+                elif(response == 1):
+                    print("Action Failed, the requested quantity is greater than the current VM's CPU count.")
+                    menu(io)
+                elif(response == 2):
+                    print("Action Failed, VM with the requested tag not found.")
+                    menu(io)
+            else:
+                print("Undefined option selected.")
+                menu(io)
+        else:
+            print("Undefined option selected")
+            menu(io)    
+    else:
+        print("Undefined Option Selected.")
+        menu(io)
+
+def createvm(io):
+    data = str(0).ljust(4)
+    data += str(len('createVM')).ljust(4)
+    data += 'createVM'
+    vm_name = input("VM Name: ")
+    data += str(len(vm_name)).ljust(4)
+    data += vm_name
+
+    vm_tag = input("VM Tag: ")
+    data += str(len(vm_tag)).ljust(4)
+    data += vm_tag
+    io.send(data.encode())
+    response = int(io.recv(4))
+    if(response == 2):
+        print("Funds not sufficient to spawn a VM")
+        menu(io)
+    elif(response == 1):
+        print("VM with the requested tag is already present")
+        menu(io)
+    else:
+        print("Successfully created the VM")
+        menu(io)
 
 
 def register(io):

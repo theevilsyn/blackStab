@@ -11,6 +11,8 @@ formatter = logging.Formatter('[*] %(asctime)s - %(levelname)s - %(message)s ')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
+make_field = lambda data: str(len(data)).ljust(4) + data
+
 def recvbytes(conn, remains):
     buf = b""
     while remains:

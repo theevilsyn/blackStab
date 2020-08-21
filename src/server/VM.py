@@ -54,7 +54,7 @@ class VM:
             pass
         
         vm = eval(unhexlify(open(path.join(self.region, account, tag)).read()))
-        if(operation == 0):
+        if(operation == 1):
             if(not (port in eval("vm.{}Ports".format(proto)))):
                 eval("vm.{}Ports".format(proto)).append(port)
                 eval("vm.{}Ports".format(proto)).sort()
@@ -90,7 +90,7 @@ class VM:
 
         vm = eval(unhexlify(open(path.join(self.region, account, tag)).read()))
         cost = prices[resource] * count
-        if(operation == 0):
+        if(operation == 1):
             if(cost > balance):
                 return 1
             else:
@@ -145,11 +145,10 @@ class VM:
         return data
 
     def listmyVMs(self, account):
-        if(not path.exists(path.join(self.region, account))):
-            return -1
+        if(len(listdir(path.join(self.region, account))) == 0):
+            return 0
         else:
             pass
-        
         vmtags = '\n'.join(listdir(path.join(self.region, account)))
         return vmtags
 

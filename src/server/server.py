@@ -8,7 +8,7 @@ from VM import VM, VMStruct, accounts
 
 HOST = ''
 PORT = 9999
-make_field = lambda data: str(len(data)).ljust(4) + data
+
 
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,7 +60,7 @@ def client_thread(conn, a):
                 conn.send(str(-1).ljust(4).encode())
             else:
                 pass
-            if(action == 'create'):
+            if(action == 'createVM'):
                 logger.info("{} requested {} function".format(addr, action))
                 createvm(conn, vm, account, email, password)
             
@@ -82,42 +82,26 @@ def client_thread(conn, a):
                 response = vm.modifyFirewall(account=hexlify(email+password), tag=tag, proto='udp', port=port, operation=operation)
                 conn.send(str(response).ljust(4).encode())
                 
-            elif(action == 'upScaleMemory'):
+            elif(action == 'scaleMemory'):
                 logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, 4)
+                operation = int(recvbytes(conn, 4)) #0 for upscale; 1 for downscale
                 count = int(recvbytes(conn, 4))
                 _credits = account.showCredits(email=email)
-                response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='ram', count=count, operation=0)
+                response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='ram', count=count, operation=operation)
                 conn.send(str(response).ljust(4).encode())
-            
-            elif(action == 'downScaleMemory'):
+                            
+            elif(action == 'scaleCPU'):
                 logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, 4)
+                operation = int(recvbytes(conn, 4))
                 count = int(recvbytes(conn, 4))
                 _credits = account.showCredits(email=email)
-                response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='ram', count=count, operation=1)
+                response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='cpu', count=count, operation=operation)
                 conn.send(str(response).ljust(4).encode())
-                
-            elif(action == 'upScaleCPU'):
-                logger.info("{} requested {} function".format(addr, action))
-                tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, 4)
-                count = int(recvbytes(conn, 4))
-                _credits = account.showCredits(email=email)
-                response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='cpu', count=count, operation=0)
-                conn.send(str(response).ljust(4).encode())
-            
-            elif(action == 'downScaleCPU'):
-                logger.info("{} requested {} function".format(addr, action))
-                tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, 4)
-                count = int(recvbytes(conn, 4))
-                _credits = account.showCredits(email=email)
-                response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='ram', count=count, operation=1)
-                conn.send(str(response).ljust(4).encode())
-            
+                        
             elif(action == 'deleteVM'):
                 logger.info("{} requested {} function".format(addr, action))
                 tag_len = int(recvbytes(conn, 4))
@@ -132,6 +116,12 @@ def client_thread(conn, a):
                 response = account.removeAccount(email=email, password=password)
                 vm.removeAccount(account=hexlify(email+password), challenge=True)
                 conn.send(str(response).ljust(4).encode())
+                if(response == 0):
+                    logger.info("Deleted account of {}".format(email))
+                    conn.close()
+                    exit()
+                else:
+                    pass
             
             elif(action == 'statusofmyVM'):
                 logger.info("{} requested {} function".format(addr, action))
@@ -150,10 +140,10 @@ def client_thread(conn, a):
             elif(action == 'listallmyVMs'):
                 logger.info("{} requested {} function".format(addr, action))
                 all_my_vms = vm.listmyVMs(account=hexlify(email, password))
-                if(all_my_vms == -1):
-                    conn.send(str(-1).ljust(4).encode())
+                if(all_my_vms == 0):
+                    conn.send(str(0).ljust(4).encode())
                 else:
-                    count = len(all_my_vms.split('\n'))
+                    count = len(all_my_vms)
                     conn.send(str(count).ljust(4).encode())
                     conn.send(all_my_vms.encode())
 
@@ -164,6 +154,7 @@ def client_thread(conn, a):
                 conn.send(alltags.encode())
             
             else:
+                logger.warn("Unexpected function called: {}".format(action))
                 conn.send(b'FUCK') # no proper function is called client prints something went wrong
 
 
