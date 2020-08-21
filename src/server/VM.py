@@ -202,8 +202,8 @@ class accounts:
         cnx = self.cnx
         cursor = cnx.cursor()
         cursor.execute("SELECT credits from users where email='{}'".format(email))
-        credits = cursor.fetchall()
-        return credits
+        _credits = cursor.fetchall()[0][0]
+        return _credits
 
     def useCredits(self, email, credits):
         cnx = self.cnx
