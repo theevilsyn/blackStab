@@ -172,7 +172,9 @@ class accounts:
         cursor.execute("SELECT * from users where email='{}'".format(email))
         acc_match = cursor.fetchall()
         if(len(acc_match)):
-            return 1 # email already teken
+            return 1 # email already taken
+        elif(len(password) < 12):
+            return 2
         else:
             pass
         _register = ("INSERT INTO users "

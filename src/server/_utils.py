@@ -33,6 +33,21 @@ def register(conn, account):
 
     _register = account.register(email=email.decode(), username=username.decode(), password=password.decode())
     conn.send(str(_register).ljust(4).encode())
+    if( (_register == 1) or (_register == 2)):
+        conn.close()
+        account.cnx.close()
+        exit()
+    else:
+        pass
+    _nextaction = int(recvbytes(conn, 4))
+    if(_nextaction == 1): #login
+        login(conn, account)
+    elif(_nextaction == 2): #register again
+        register(conn, account)
+    else:
+        conn.close()
+        account.cnx.close()
+        exit()
 
 def login(conn, account):
     email_len = int(recvbytes(conn, 4))
@@ -43,6 +58,12 @@ def login(conn, account):
 
     _login = account.check_login(email=email.decode(), password=password.decode())
     conn.send(str(_login).ljust(4))
+    if( (_login == 1) or (_login == 2)):
+        conn.close()
+        account.cnx.close()
+        exit()
+    else:
+        pass
     return email, password
 
 def createvm(conn, vm, account, email, password):

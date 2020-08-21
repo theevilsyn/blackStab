@@ -18,9 +18,9 @@ message register { // from client to server
     /*
     returns int32
     ret 0 --> Successfully registered the user
-    ret 1 --> Not a valid email
-    ret 2 --> Email already Taken
-    ret 3 --> Password length is not greater that 12
+    // ret 3 --> Not a valid email // Should be implemented in client
+    ret 1 --> Email already Taken
+    ret 2 --> Password length is not greater that 12
     */
 }
 

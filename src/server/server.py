@@ -1,5 +1,6 @@
 import socket
 from _utils import *
+del(logging, ch, formatter) # just that code shows these are unused, remove later
 from binascii import hexlify, unhexlify
 from _thread import start_new_thread
 from VM import VM, VMStruct, accounts
@@ -51,7 +52,7 @@ def client_thread(conn, a):
         if(action == 1337): # bye bye received
             logger.info("Bye Bye requested")
             conn.close()
-            break
+            exit()
         elif(action == 0): # wants to call a function
             action_len = int(recvbytes(conn, 4))
             action = recvbytes(conn, action_len)
