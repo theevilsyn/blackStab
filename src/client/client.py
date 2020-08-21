@@ -178,7 +178,7 @@ def modifyvm(io):
                 data += str(operation).ljust(4)
                 data += str(count).ljust(4)
                 io.send(data.encode())
-                response = io.recv(4)
+                response = int(io.recv(4))
                 if(response == 0):
                     print("Successfully Added {} GB memory to your VM".format(count))
                     menu(io)
@@ -223,7 +223,7 @@ def modifyvm(io):
                 data += str(operation).ljust(4)
                 data += str(count).ljust(4)
                 io.send(data.encode())
-                response = io.recv(4)
+                response = int(io.recv(4))
                 if(response == 0):
                     print("Successfully Added {} CPUs to your VM".format(count))
                     menu(io)
