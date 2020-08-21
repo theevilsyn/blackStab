@@ -153,7 +153,7 @@ def client_thread(conn, addr):
 
                 status = vm.statusofVM(account=hexlify(email+password), tag=tag)
                 conn.send(str(len(status)).ljust(4).encode())
-                conn.send(status)
+                conn.send(status.encode())
             
             elif(action == 'viewSubscription'):
                 logger.info("{} requested {} function".format(addr[0], action))

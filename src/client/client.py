@@ -80,6 +80,7 @@ def listmyvms(io):
 
 def vmstatus(io):
     data = str(0).ljust(4)
+    data += str(len('statusofmyVM')).ljust(4)
     data += 'statusofmyVM'
     vm_tag = input("VM Tag: ")
     data += str(len(vm_tag)).ljust(4)
@@ -98,6 +99,7 @@ def deletevm(io):
     vm_tag = input("VM Tag: ")
     data += str(len(vm_tag)).ljust(4)
     data += vm_tag
+    io.send(data.encode())
     response = int(io.recv(4))
     if(response == 1):
         print("VM with the requested tag not found")
@@ -241,15 +243,13 @@ def modifyvm(io):
         elif(resource == 2):
             data += str(len('scaleCPU')).ljust(4)
             data += 'scaleCPU'
+            vm_tag = input("VM Tag: ")
+            data += str(len(vm_tag)).ljust(4)
+            data += vm_tag
             print("""
             1. Upscale CPU
             2. Downscale CPU
             """)
-
-            vm_tag = input("VM Tag: ")
-            data += str(len(vm_tag)).ljust(4)
-            data += vm_tag
-            
             operation = int(input())
             if(operation == 1):
                 count = int(input("Enter how many CPUs should be added: "))
