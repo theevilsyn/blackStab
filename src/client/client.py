@@ -345,8 +345,11 @@ def start(io):
         register(io)
     elif(choice == 2):
         login(io)
+    elif(choice == 3):
+        _exit()
     else:
-        exit()
+        print("Select a valid option")
+        start(io)
 
 
 io = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
