@@ -21,7 +21,7 @@ class VMStruct:
 
 class VM:
     def __init__(self):
-        self.region = CONFIG['region']
+        self.region = CONFIG['region'].encode()
         self.functions = {
             "createVM": self.createVM,
             "modifyFirewall": self.modifyFirewall,
