@@ -44,6 +44,8 @@ def client_thread(conn, a):
         logger.info("{} logged in to {}".format(addr,email))
     else:
         conn.close()
+        logger.info("Bye Bye requested")
+        exit()
     while True:
         action = int(recvbytes(conn, 4))
         if(action == 1337): # bye bye received
@@ -166,7 +168,7 @@ def client_thread(conn, a):
 
 while True:
     conn, addr = s.accept()
-    logger.info("Connected to " + addr[0] + ":" + str(addr[1]))
+    logger.info("Connection received from " + addr[0] + ":" + str(addr[1]))
 
     start_new_thread(client_thread, (conn,addr[0]))
 

@@ -7,7 +7,7 @@ logger.setLevel(logging.DEBUG)
 
 ch = logging.FileHandler('server.log')
 ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('[*] %(asctime)s - %(levelname)s - %(message)s ')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
@@ -41,7 +41,7 @@ def login(conn, account):
     password_len = int(recvbytes(conn, 4))
     password = recvbytes(conn, password_len)
 
-    _login = account.check_login(email=email, password=password)
+    _login = account.check_login(email=email.decode(), password=password.decode())
     conn.send(str(_login).ljust(4))
     return email, password
 
