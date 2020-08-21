@@ -309,7 +309,7 @@ def register(io):
         exit()
     else:
         print("Registration Successful")
-        reg_login(io)
+        start(io)
 
 
 def login(io):
