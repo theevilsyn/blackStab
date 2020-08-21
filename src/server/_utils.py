@@ -81,6 +81,6 @@ def createvm(conn, vm, account, email, password):
     tag = recvbytes(conn, tag_len)
 
     balance = account.showCredits
-    response = vm.create(funds=balance, account=hexlify(email+password), name=vmname, tag=tag)
+    response = vm.createVM(funds=balance, account=hexlify(email+password), name=vmname, tag=tag)
     conn.send(str(response).ljust(4).encode())
     logger("Created VM {} for {}".format(tag, email))
