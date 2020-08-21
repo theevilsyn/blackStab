@@ -74,7 +74,7 @@ def client_thread(conn, addr):
             exit()
         elif(action == 0): # wants to call a function
             action_len = int(recvbytes(conn, 4))
-            action = recvbytes(conn, action_len)
+            action = recvbytes(conn, action_len).decode()
             if(action not in actions):
                 conn.send(str(-1).ljust(4).encode())
             else:
