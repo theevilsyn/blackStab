@@ -36,24 +36,26 @@ def register(conn, account, addr):
     _register = account.register(email=email.decode(), username=username.decode(), password=password.decode())
     conn.send(str(_register).ljust(4).encode())
     if( (_register == 1) or (_register == 2)):
+        logger.info("Wrong register attempt from {} : ERROR Code: {}".format(addr[0], _register))
         conn.close()
         account.cnx.close()
         exit()
     else:
         pass
+    logger.info("Registerd a new user {} from {}".format(email, addr[0]))
     _nextaction = int(recvbytes(conn, 4))
     if(_nextaction == 1): #register again
         register(conn, account, addr)
-        logger.info("{} requested register function".format(addr))
+        logger.info("{} requested register function".format(addr[0]))
     elif(_nextaction == 2): #login
-        login(conn, account)
-        logger.info("{} logged in to {}".format(addr,email))
+        login(conn, account, addr)
+        logger.info("{} logged in to {}".format(addr[0],email))
     else:
         conn.close()
         account.cnx.close()
         exit()
 
-def login(conn, account):
+def login(conn, account, addr):
     email_len = int(recvbytes(conn, 4))
     email = recvbytes(conn, email_len)
 
@@ -67,6 +69,7 @@ def login(conn, account):
         account.cnx.close()
         exit()
     else:
+        logger.info("{} logged in to account {}".format(addr[0], email))
         pass
     return email, password
 

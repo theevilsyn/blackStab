@@ -6,6 +6,13 @@ from _thread import start_new_thread
 from VM import VM, VMStruct, accounts
 
 
+##########
+## TODO ##
+##########
+###########################
+###   Improve Logging   ###
+###########################
+
 HOST = ''
 PORT = 9999
 
@@ -49,12 +56,12 @@ def client_thread(conn, addr):
     
     action_code = int(recvbytes(conn, 4))
     if(action_code == 1): # register
-        logger.info("{} requested register function".format(addr))
+        logger.info("{} requested register function".format(addr[0]))
         register(conn, account, addr)
 
     elif(action_code == 2): # login
-        email, password = login(conn, account)
-        logger.info("{} logged in to {}".format(addr,email))
+        email, password = login(conn, account, addr)
+        logger.info("{} logged in to {}".format(addr[0],email))
     else:
         conn.close()
         logger.info("Bye Bye requested")
@@ -62,7 +69,7 @@ def client_thread(conn, addr):
     while True:
         action = int(recvbytes(conn, 4))
         if(action == 1337): # bye bye received
-            logger.info("Bye Bye requested")
+            logger.info("{} Bye Bye requested".format(addr[0]))
             conn.close()
             exit()
         elif(action == 0): # wants to call a function
@@ -73,11 +80,11 @@ def client_thread(conn, addr):
             else:
                 pass
             if(action == 'createVM'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 createvm(conn, vm, account, email, password)
             
             elif(action == 'ruleAddTCP'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, tag_len)
                 port = int(recvbytes(conn, 5)) # receive 5 bytes because max number 65535
@@ -86,7 +93,7 @@ def client_thread(conn, addr):
                 conn.send(str(response).ljust(4).encode())
             
             elif(action == 'ruleAddUDP'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, tag_len)
                 port = int(recvbytes(conn, 5)) # receive 5 bytes because max number 65535
@@ -95,7 +102,7 @@ def client_thread(conn, addr):
                 conn.send(str(response).ljust(4).encode())
                 
             elif(action == 'scaleMemory'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, 4)
                 operation = int(recvbytes(conn, 4)) #0 for upscale; 1 for downscale
@@ -105,7 +112,7 @@ def client_thread(conn, addr):
                 conn.send(str(response).ljust(4).encode())
                             
             elif(action == 'scaleCPU'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, 4)
                 operation = int(recvbytes(conn, 4))
@@ -115,28 +122,28 @@ def client_thread(conn, addr):
                 conn.send(str(response).ljust(4).encode())
                         
             elif(action == 'deleteVM'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, tag_len)
                 response = vm.deleteVM(account=hexlify(email+password), tag=tag)
                 conn.send(str(response).ljust(4).encode())
 
             elif(action == 'deleteAccount'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 password_len = int(recvbytes(conn, 4))
                 password = recvbytes(conn, password_len)
                 response = account.removeAccount(email=email, password=password)
                 vm.removeAccount(account=hexlify(email+password), challenge=True)
                 conn.send(str(response).ljust(4).encode())
                 if(response == 0):
-                    logger.info("Deleted account of {}".format(email))
+                    logger.info("Deleted account of {} : Reques from {}".format(email, addr[0]))
                     conn.close()
                     exit()
                 else:
                     pass
             
             elif(action == 'statusofmyVM'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 tag_len = int(recvbytes(conn, 4))
                 tag = recvbytes(conn, tag_len)
 
@@ -145,12 +152,12 @@ def client_thread(conn, addr):
                 conn.send(status)
             
             elif(action == 'viewSubscription'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 credits_left = account.showCredits(email=email)
                 conn.send(str(credits_left).ljust(4).encode())
 
             elif(action == 'listallmyVMs'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 all_my_vms = vm.listmyVMs(account=hexlify(email, password))
                 if(all_my_vms == 0):
                     conn.send(str(0).ljust(4).encode())
@@ -160,13 +167,13 @@ def client_thread(conn, addr):
                     conn.send(all_my_vms.encode())
 
             elif(action == 'noonecallsme'):
-                logger.info("{} requested {} function".format(addr, action))
+                logger.info("{} requested {} function".format(addr[0], action))
                 alltags = vm.masterlist()
                 conn.send(str(len(alltags)).ljust(4).encode())
                 conn.send(alltags.encode())
             
             else:
-                logger.warn("Unexpected function called: {}".format(action))
+                logger.warn("Unexpected function call from {} : {}".format(addr[0], action))
                 conn.send(b'FUCK') # no proper function is called client prints something went wrong
 
 
