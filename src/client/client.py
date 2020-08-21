@@ -131,6 +131,11 @@ def modifyvm(io):
             data += vm_tag
 
             port = int(input("Port: "))
+            if(port > 65535):
+                print("Please enter a valid port next time!!")
+                menu(io)
+            else:
+                pass
             data += str(port).ljust(5)
             
             print("""
@@ -162,6 +167,9 @@ def modifyvm(io):
             data += vm_tag
 
             port = int(input("Port: "))
+            if(port > 65535):
+                print("Please select a valid port next time!!")
+                menu(io)
             data += str(port).ljust(5)
             
             print("""
