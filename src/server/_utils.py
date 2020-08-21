@@ -23,7 +23,7 @@ def recvbytes(conn, remains):
         remains -= len(data)
     return buf
 
-def register(conn, account):
+def register(conn, account, addr):
     username_len = int(recvbytes(conn, 4))
     username = recvbytes(conn,  username_len)
 
@@ -43,9 +43,11 @@ def register(conn, account):
         pass
     _nextaction = int(recvbytes(conn, 4))
     if(_nextaction == 1): #register again
-        register(conn, account)
+        register(conn, account, addr)
+        logger.info("{} requested register function".format(addr))
     elif(_nextaction == 2): #login
         login(conn, account)
+        logger.info("{} logged in to {}".format(addr,email))
     else:
         conn.close()
         account.cnx.close()

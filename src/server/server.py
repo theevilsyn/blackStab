@@ -28,7 +28,7 @@ except socket.error as msg:
 s.listen(10)
 
 
-def client_thread(conn, a):
+def client_thread(conn, addr):
     vm = VM()
     account = accounts()
     actions = [
@@ -50,7 +50,7 @@ def client_thread(conn, a):
     action_code = int(recvbytes(conn, 4))
     if(action_code == 1): # register
         logger.info("{} requested register function".format(addr))
-        register(conn, account)
+        register(conn, account, addr)
 
     elif(action_code == 2): # login
         email, password = login(conn, account)
@@ -174,6 +174,6 @@ while True:
     conn, addr = s.accept()
     logger.info("Connection received from " + addr[0] + ":" + str(addr[1]))
 
-    start_new_thread(client_thread, (conn,addr[0]))
+    start_new_thread(client_thread, (conn,addr))
 
 s.close()
