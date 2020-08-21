@@ -355,6 +355,4 @@ io.connect(('192.168.123.219', 9999))
 try:
     start(io)        
 except KeyboardInterrupt:
-    print("Exiting upon your request!!")
-    io.send(b'1337')
-    io.close()
+    _exit(io)
