@@ -46,6 +46,8 @@ def register(io):
         exit()
     else:
         print("Registration Successful")
+        reg_login(io)
+
 
 def login(io):
     data='2'.ljust(4)
@@ -69,17 +71,12 @@ def login(io):
         exit()
 
 
-
-
-io = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-io.connect(('192.168.123.219', 9999))
-
-try:
+def reg_login(io):
     print("""
-    1. Register
-    2. Login
-    3. Exit
-    """)
+        1. Register
+        2. Login
+        3. Exit
+        """)
     choice = int(input())
     if(choice == 1):
         register(io)
@@ -87,7 +84,13 @@ try:
         login(io)
     else:
         exit()
-        
+
+
+io = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+io.connect(('192.168.123.219', 9999))
+
+try:
+    reg_login(io)        
 except KeyboardInterrupt:
     print("Exiting upon your request!!")
     io.send(b'1337')

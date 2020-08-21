@@ -40,10 +40,10 @@ def register(conn, account):
     else:
         pass
     _nextaction = int(recvbytes(conn, 4))
-    if(_nextaction == 1): #login
-        login(conn, account)
-    elif(_nextaction == 2): #register again
+    if(_nextaction == 1): #register again
         register(conn, account)
+    elif(_nextaction == 2): #login
+        login(conn, account)
     else:
         conn.close()
         account.cnx.close()
@@ -57,7 +57,7 @@ def login(conn, account):
     password = recvbytes(conn, password_len)
 
     _login = account.check_login(email=email.decode(), password=password.decode())
-    conn.send(str(_login).ljust(4))
+    conn.send(str(_login).ljust(4).encode())
     if( (_login == 1) or (_login == 2)):
         conn.close()
         account.cnx.close()
@@ -75,5 +75,5 @@ def createvm(conn, vm, account, email, password):
 
     balance = account.showCredits
     response = vm.create(funds=balance, account=hexlify(email+password), name=vmname, tag=tag)
-    conn.send(str(response).ljust(4))
+    conn.send(str(response).ljust(4).encode())
     logger("Created VM {} for {}".format(tag, email))
