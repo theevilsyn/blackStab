@@ -334,7 +334,7 @@ def login(io):
         exit()
 
 
-def reg_login(io):
+def start(io):
     print("""
         1. Register
         2. Login
@@ -353,7 +353,7 @@ io = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 io.connect(('192.168.123.219', 9999))
 
 try:
-    reg_login(io)        
+    start(io)        
 except KeyboardInterrupt:
     print("Exiting upon your request!!")
     io.send(b'1337')
