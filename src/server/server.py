@@ -162,7 +162,7 @@ def client_thread(conn, addr):
 
             elif(action == 'listallmyVMs'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                all_my_vms = vm.listmyVMs(account=hexlify(email, password))
+                all_my_vms = vm.listmyVMs(account=hexlify(email+password))
                 if(all_my_vms == 0):
                     conn.send(str(0).ljust(4).encode())
                 else:

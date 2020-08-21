@@ -129,7 +129,7 @@ class VM:
 
     def statusofVM(self, account, tag): #the vulnerable function
         if(not path.exists(path.join(self.region, account, tag))):
-            data = "The VM with the tag {} does not exist".format(tag)
+            data = "The VM with the tag {} does not exist".format(tag.decode())
             return data
         else:
             pass
@@ -141,7 +141,7 @@ class VM:
         TCP Ports Open: {}
         UDP Ports Open: {}
         Specifications: Number of CPUs are {} and the RAM is {} GB
-        """.format(vm.name, vm.tag, str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
+        """.format(vm.name.decode(), vm.tag.decode(), str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
         return data
 
     def listmyVMs(self, account):
