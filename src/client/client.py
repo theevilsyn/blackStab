@@ -300,7 +300,7 @@ def register(io):
     data+=password
 
     io.send(data.encode())
-    response = io.recv(4)
+    response = int(io.recv(4))
 
     if(int(response == 1)):
         print("Email already Taken :(")
