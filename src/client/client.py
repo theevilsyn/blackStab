@@ -44,11 +44,12 @@ def _exit(io):
 
 def deleteacc(io):
     data = str(0).ljust(4)
+    data += str(len('deleteAccount')).ljust(4)
     data += 'deleteAccount'
     password = input("For security reasons, please enter your password: ")
-    data += str(password).ljust(4)
+    data += str(len(password)).ljust(4)
     data += password
-    io.send(data)
+    io.send(data.encode())
     response = int(io.recv(4))
     if(response == 2):
         print("You entered a wrong password.")
@@ -58,6 +59,7 @@ def deleteacc(io):
 
 def viewsubscription(io):
     data = str(0).ljust(4)
+    data += str(len('viewSubscription')).ljust(4)
     data += 'viewSubscription'
     io.send(data.encode())
     _credits = int(io.recv(4))
