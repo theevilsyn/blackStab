@@ -64,7 +64,7 @@ def client_thread(conn, addr):
         logger.info("{} logged in to {}".format(addr[0],email))
     else:
         conn.close()
-        logger.info("Bye Bye requested")
+        logger.info("{} Bye Bye requested".format(addr[0]))
         exit()
     while True:
         action = int(recvbytes(conn, 4))
