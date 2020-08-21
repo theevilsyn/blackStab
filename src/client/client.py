@@ -306,13 +306,13 @@ def register(io):
         print("Email already Taken :(")
         # io.send(b"1337")
         # io.close()
-        exit()
+        _exit(io)
     elif(int(response) == 2):
         print("Password not greater than 12 :/")
         exit()
     else:
         print("Registration Successful")
-        start(io)
+        
 
 
 def login(io):

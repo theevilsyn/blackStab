@@ -43,17 +43,9 @@ def register(conn, account, addr):
     else:
         pass
     logger.info("Registerd a new user {} from {}".format(email, addr[0]))
-    _nextaction = int(recvbytes(conn, 4))
-    if(_nextaction == 1): #register again
-        register(conn, account, addr)
-        logger.info("{} requested register function".format(addr[0]))
-    elif(_nextaction == 2): #login
-        login(conn, account, addr)
-        logger.info("{} logged in to {}".format(addr[0],email))
-    else:
-        conn.close()
-        account.cnx.close()
-        exit()
+    conn.close()
+    account.cnx.close()
+    exit()
 
 def login(conn, account, addr):
     email_len = int(recvbytes(conn, 4))
