@@ -107,9 +107,10 @@ def client_thread(conn, addr):
                 tag = recvbytes(conn, tag_len)
                 operation = int(recvbytes(conn, 4)) #0 for upscale; 1 for downscale
                 count = int(recvbytes(conn, 4))
-                _credits = account.showCredits(email=email.decode())
                 response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='ram', count=count, operation=operation)
                 conn.send(str(response).ljust(4).encode())
+                if(response == 0 and operation == 0):
+                    account.useCredits(email=email.decode(), credits=count*30)
                             
             elif(action == 'scaleCPU'):
                 logger.info("{} requested {} function".format(addr[0], action))
@@ -117,9 +118,10 @@ def client_thread(conn, addr):
                 tag = recvbytes(conn, tag_len)
                 operation = int(recvbytes(conn, 4))
                 count = int(recvbytes(conn, 4))
-                _credits = account.showCredits(email=email.decode())
                 response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='cpu', count=count, operation=operation)
                 conn.send(str(response).ljust(4).encode())
+                if(response == 0 and operation == 0):
+                    account.useCredits(email=email.decode(), credits=count*70)
                         
             elif(action == 'deleteVM'):
                 logger.info("{} requested {} function".format(addr[0], action))

@@ -72,8 +72,8 @@ class VM:
 
     def modifyShape(self, account, balance, tag, resource, count, operation):
         """
-        1GB RAM = 10$
-        1 CPU = 40$
+        1GB RAM = 30$
+        1 CPU = 70$
         Base VM = 150$
         Minimum RAM = 1GB
         Minimum CPU = 1
@@ -208,7 +208,8 @@ class accounts:
     def useCredits(self, email, credits):
         cnx = self.cnx
         cursor = cnx.cursor()
-        cursor.execute("UPDATE users SET credits={} WHERE email='{}'".format(credits, email))
+        _credits = self.showCredits(email=email)
+        cursor.execute("UPDATE users SET credits={} WHERE email='{}'".format((_credits-credits), email))
         cnx.commit()
 
     def removeAccount(self, email, password):
