@@ -104,7 +104,7 @@ def client_thread(conn, addr):
             elif(action == 'scaleMemory'):
                 logger.info("{} requested {} function".format(addr[0], action))
                 tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, 4)
+                tag = recvbytes(conn, tag_len)
                 operation = int(recvbytes(conn, 4)) #0 for upscale; 1 for downscale
                 count = int(recvbytes(conn, 4))
                 _credits = account.showCredits(email=email)
@@ -114,7 +114,7 @@ def client_thread(conn, addr):
             elif(action == 'scaleCPU'):
                 logger.info("{} requested {} function".format(addr[0], action))
                 tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, 4)
+                tag = recvbytes(conn, tag_len)
                 operation = int(recvbytes(conn, 4))
                 count = int(recvbytes(conn, 4))
                 _credits = account.showCredits(email=email)

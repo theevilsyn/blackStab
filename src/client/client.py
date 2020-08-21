@@ -1,5 +1,7 @@
 import socket
 
+## max port number should be 65535 in input
+
 def menu(io):
     print("""
     1. CreateVM
@@ -118,13 +120,14 @@ def modifyvm(io):
         """)
         proto = int(input())
         if(proto == 1):
+            data += str(len('ruleAddTCP')).ljust(4)
             data += 'ruleAddTCP'
             vm_tag = input("VM Tag: ")
             data += str(len(vm_tag)).ljust(4)
             data += vm_tag
 
             port = int(input("Port: "))
-            data += str(len(port)).ljust(5)
+            data += str(port).ljust(5)
             
             print("""
             1. Open {} TCP Port
@@ -133,15 +136,29 @@ def modifyvm(io):
             operation = int(input()) 
             data += str(operation).ljust(4)
             io.send(data.encode())
-
+            response = int(io.recv(4))
+            if(operation == 1):
+                action = 'open'
+            else:
+                action = 'clos'
+            if(response == 0):
+                print("Successfully {}ed TCP port {}".format(action, port))
+                menu(io)
+            elif(response == 1):
+                print("TCP port {} already {}ed".format(port, action))
+                menu(io)
+            else:
+                print("VM with the requested tag not found")
+                menu(io)
         elif(proto == 2):
+            data += str(len('ruleAddUDP')).ljust(4)
             data += 'ruleAddUDP'
             vm_tag = input("VM Tag: ")
             data += str(len(vm_tag)).ljust(4)
             data += vm_tag
 
             port = int(input("Port: "))
-            data += str(len(port)).ljust(5)
+            data += str(port).ljust(5)
             
             print("""
             1. Open {} UDP Port
@@ -150,6 +167,20 @@ def modifyvm(io):
             operation = int(input()) 
             data += str(operation).ljust(4)
             io.send(data.encode())
+            response = int(io.recv(4))
+            if(operation == 1):
+                action = 'open'
+            else:
+                action = 'clos'
+            if(response == 0):
+                print("Successfully {}ed UDP port {}".format(action, port))
+                menu(io)
+            elif(response == 1):
+                print("UDP port {} already {}ed".format(port, action))
+                menu(io)
+            else:
+                print("VM with the requested tag not found")
+                menu(io)
         
         else:
             print("Undefined choice selected")
@@ -161,6 +192,7 @@ def modifyvm(io):
         """)
         resource = int(input())
         if(resource == 1):
+            data += str(len('scaleMemory')).ljust(4)
             data += 'scaleMemory'
 
             vm_tag = input("VM Tag: ")
@@ -207,7 +239,8 @@ def modifyvm(io):
                 print("Undefined option selected.")
                 menu(io)
         elif(resource == 2):
-            data += 'scaleMemory'
+            data += str(len('scaleCPU')).ljust(4)
+            data += 'scaleCPU'
             print("""
             1. Upscale CPU
             2. Downscale CPU
