@@ -154,10 +154,9 @@ class VM:
 
     def masterlist(self):
         vms = []
-        for r, d, f in walk(path.join(self.region)):
-            for vm in f:
-               vms.append(vm)
-        del(r,d) # only decause `Code` highlights unused variables
+        for account in listdir(self.region):
+            for tag in listdir(path.join(self.region, account)):
+                vms.append(self.statusofVM(account=account, tag=tag))
         return '\n'.join(vms)
 
 class accounts:

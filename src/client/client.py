@@ -77,7 +77,7 @@ def listmyvms(io):
         menu(io)
     else:
         vms = io.recv(count)
-        print(vms)
+        print(vms.decode())
         menu(io)
 
 def vmstatus(io):
@@ -90,7 +90,7 @@ def vmstatus(io):
     io.send(data.encode())
     data_len = int(io.recv(4))
     status = io.recv(data_len)
-    print(status)
+    print(status.decode())
     print("\n\n")
     menu(io)
 
@@ -399,7 +399,7 @@ def start(io):
 
 
 io = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-io.connect(('192.168.123.219', 9999))
+io.connect(('localhost', 9999))
 
 try:
     start(io)        

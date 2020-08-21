@@ -13,28 +13,6 @@ from VM import VM, VMStruct, accounts
 ###   Improve Logging   ###
 ###########################
 
-HOST = ''
-PORT = 9999
-
-
-try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-except socket.error as msg:
-    logger.info("Could not create socket. Error: " + str(msg))
-    exit()
-
-logger.info("Socket Created")
-
-try:
-    s.bind((HOST, PORT))
-    logger.info("Socket Bound to port " + str(PORT))
-except socket.error as msg:
-    logger.info("Bind Failed. Error: {}".format(msg))
-    exit()
-
-s.listen(10)
-
-
 def client_thread(conn, addr):
     vm = VM()
     account = accounts()
@@ -180,6 +158,27 @@ def client_thread(conn, addr):
                 logger.warn("Unexpected function call from {} : {}".format(addr[0], action))
                 conn.send(b'FUCK') # no proper function is called client prints something went wrong
 
+
+HOST = ''
+PORT = 9999
+
+
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+except socket.error as msg:
+    logger.error("Could not create socket. Error: " + str(msg))
+    exit()
+
+logger.info("Socket Created")
+
+try:
+    s.bind((HOST, PORT))
+    logger.info("Socket Bound to port " + str(PORT))
+except socket.error as msg:
+    logger.error("Bind Failed. Error: {}".format(msg))
+    exit()
+
+s.listen(10)
 
 while True:
     conn, addr = s.accept()
