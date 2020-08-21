@@ -282,7 +282,7 @@ def createvm(io):
         menu(io)
     else:
         print("Something Went Wrong!!!")
-        _exit()
+        _exit(io)
 
 
 def register(io):
