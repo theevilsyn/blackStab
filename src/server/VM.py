@@ -23,7 +23,7 @@ class VM:
     def __init__(self):
         self.region = CONFIG['region']
         self.functions = {
-            "createVM": self.create,
+            "createVM": self.createVM,
             "modifyFirewall": self.modifyFirewall,
             "modifyShape": self.modifyShape,
             "deleteVM": self.deleteVM,
