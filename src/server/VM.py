@@ -149,7 +149,7 @@ class VM:
             return 0
         else:
             pass
-        vmtags = '\n'.join(listdir(path.join(self.region, account)))
+        vmtags = '\n'.join(listdir(path.join(self.region.decode(), account.decode())))
         return vmtags
 
     def masterlist(self):
