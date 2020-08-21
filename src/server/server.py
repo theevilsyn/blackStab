@@ -31,7 +31,19 @@ s.listen(10)
 def client_thread(conn, a):
     vm = VM()
     account = accounts()
-    actions = vm.functions
+    actions = [
+        'createVM',
+        'ruleAddTCP',
+        'ruleAddUDP',
+        'scaleMemory',
+        'scaleCPU',
+        'deleteVM',
+        'deleteAccount',
+        'statusofmyVM',
+        'viewSubscription',
+        'listallmyVMs',
+        'noonecallsme'
+    ]
     
     # timestamp = recvbytes(conn, 8)
     
@@ -56,7 +68,7 @@ def client_thread(conn, a):
         elif(action == 0): # wants to call a function
             action_len = int(recvbytes(conn, 4))
             action = recvbytes(conn, action_len)
-            if(action not in list(actions.keys())):
+            if(action not in actions):
                 conn.send(str(-1).ljust(4).encode())
             else:
                 pass

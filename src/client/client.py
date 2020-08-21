@@ -277,9 +277,12 @@ def createvm(io):
     elif(response == 1):
         print("VM with the requested tag is already present")
         menu(io)
-    else:
+    elif(response == 0):
         print("Successfully created the VM")
         menu(io)
+    else:
+        print("Something Went Wrong!!!")
+        _exit()
 
 
 def register(io):
@@ -346,7 +349,7 @@ def start(io):
     elif(choice == 2):
         login(io)
     elif(choice == 3):
-        _exit()
+        _exit(io)
     else:
         print("Select a valid option")
         start(io)

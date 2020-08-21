@@ -23,7 +23,7 @@ class VM:
     def __init__(self):
         self.region = CONFIG['region']
         self.functions = {
-            "create": self.create,
+            "createVM": self.create,
             "modifyFirewall": self.modifyFirewall,
             "modifyShape": self.modifyShape,
             "deleteVM": self.deleteVM,
@@ -35,7 +35,7 @@ class VM:
 
         return
 
-    def create(self, funds, account, name, tag):
+    def createVM(self, funds, account, name, tag):
         if(not (funds > 100)):
             return 2
         if(not path.exists(path.join(self.region, account))):
