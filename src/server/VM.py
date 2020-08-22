@@ -143,7 +143,7 @@ class VM:
         TCP Ports Open: {}
         UDP Ports Open: {}
         Specifications: Number of CPUs are {} and the RAM is {} GB
-        """.format(vm.name.decode(), encode(vm.tag).decode(), account.decode(), str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
+        """.format(vm.name, encode(vm.tag).decode(), account.decode(), str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
         return data
 
     def listmyVMs(self, account):

@@ -1,7 +1,8 @@
 import socket
 from time import sleep
 from _utils import *
-del(logging, ch, formatter) # just that code shows these are unused, remove later
+from _utils import _recv, _send
+del(logging, ch, formatter, field, recvbytes) # just that code shows these are unused, remove later
 from binascii import hexlify, unhexlify
 from _thread import start_new_thread
 from VM import VM, VMStruct, accounts
@@ -30,10 +31,7 @@ def client_thread(conn, addr):
         'listallmyVMs',
         'noonecallsme'
     ]
-    
-    # timestamp = recvbytes(conn, 8)
-    
-    action_code = int(recvbytes(conn, 4))
+    action_code = _recv(conn, onlypara=True)
     if(action_code == 1): # register
         logger.info("{} requested register function".format(addr[0]))
         register(conn, account, addr)
@@ -46,16 +44,15 @@ def client_thread(conn, addr):
         logger.info("{} Bye Bye requested".format(addr[0]))
         exit()
     while True:
-        action = int(recvbytes(conn, 4))
-        if(action == 1337): # bye bye received
+        action = _recv(conn, onlypara=True)
+        if(action == -337): # bye bye received
             logger.info("{} Bye Bye requested".format(addr[0]))
             conn.close()
             exit()
         elif(action == 0): # wants to call a function
-            action_len = int(recvbytes(conn, 4))
-            action = recvbytes(conn, action_len).decode()
+            action = _recv(conn)
             if(action not in actions):
-                conn.send(str(-1).ljust(4).encode())
+                _send(conn, str(-1), makefield=False)
             else:
                 pass
             if(action == 'createVM'):
@@ -64,60 +61,55 @@ def client_thread(conn, addr):
             
             elif(action == 'ruleAddTCP'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, tag_len)
-                port = int(recvbytes(conn, 5)) # receive 5 bytes because max number 65535
-                operation = int(recvbytes(conn, 4))
-                response = vm.modifyFirewall(account=hexlify(email+password), tag=tag, proto='tcp', port=port, operation=operation)
-                conn.send(str(response).ljust(4).encode())
+                tag = _recv(conn)
+                port = _recv(conn, _len=5, onlypara=True)
+                operation = _recv(conn, onlypara=True)
+                response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), tag=tag.encode(), proto='tcp', port=port, operation=operation)
+                _send(conn, str(response), makefield=False)
             
             elif(action == 'ruleAddUDP'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, tag_len)
-                port = int(recvbytes(conn, 5)) # receive 5 bytes because max number 65535
-                operation = int(recvbytes(conn, 4))
-                response = vm.modifyFirewall(account=hexlify(email+password), tag=tag, proto='udp', port=port, operation=operation)
-                conn.send(str(response).ljust(4).encode())
-                
+                tag = _recv(conn)
+                port = _recv(conn, _len=5, onlypara=True)
+                operation = _recv(conn, onlypara=True)
+                response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), tag=tag.encode(), proto='udp', port=port, operation=operation)
+                _send(conn, str(response), makefield=False)
+
+
             elif(action == 'scaleMemory'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, tag_len)
-                operation = int(recvbytes(conn, 4)) #0 for upscale; 1 for downscale
-                count = int(recvbytes(conn, 4))
-                _credits = account.showCredits(email=email.decode())                
-                response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='ram', count=count, operation=operation)
-                conn.send(str(response).ljust(4).encode())
+                tag = _recv(conn)
+                operation = _recv(conn, onlypara=True)
+                count = _recv(conn, onlypara=4)
+                _credits = account.showCredits(email=email)                
+                response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, tag=tag.encode(), resource='ram', count=count, operation=operation)
+                _send(conn, str(response), makefield=False)
                 if(response == 0 and operation == 1):
-                    account.useCredits(email=email.decode(), credits=count*30)
+                    account.useCredits(email=email, credits=count*30)
                             
             elif(action == 'scaleCPU'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, tag_len)
-                operation = int(recvbytes(conn, 4))
-                count = int(recvbytes(conn, 4))
-                _credits = account.showCredits(email=email.decode())                
-                response = vm.modifyShape(account=hexlify(email+password), balance=_credits, tag=tag, resource='cpu', count=count, operation=operation)
-                conn.send(str(response).ljust(4).encode())
+                tag = _recv(conn)
+                operation = _recv(conn, onlypara=True)
+                count = _recv(conn, onlypara=True)
+                _credits = account.showCredits(email=email)                
+                response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, tag=tag.encode(), resource='cpu', count=count, operation=operation)
+                _send(conn, str(response), makefield=False)                
                 if(response == 0 and operation == 1):
-                    account.useCredits(email=email.decode(), credits=count*70)
+                    account.useCredits(email=email, credits=count*70)
                         
             elif(action == 'deleteVM'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, tag_len)
-                response = vm.deleteVM(account=hexlify(email+password), tag=tag)
-                conn.send(str(response).ljust(4).encode())
+                tag = _recv(conn)
+                response = vm.deleteVM(account=hexlify(email.encode() + password.encode()), tag=tag.encode())
+                _send(conn, str(response), makefield=False)
 
             elif(action == 'deleteAccount'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                password_len = int(recvbytes(conn, 4))
-                password = recvbytes(conn, password_len)
-                response = account.removeAccount(email=email.decode(), password=password.decode())
-                vm.removeAccount(account=hexlify(email+password), challenge=True)
-                conn.send(str(response).ljust(4).encode())
+                password = _recv(conn)
+                response = account.removeAccount(email=email, password=password)
+                vm.removeAccount(account=hexlify(email.encode()+password.encode()), challenge=True)
+                _send(conn, str(response), makefield=False)
                 if(response == 0):
                     logger.info("Deleted account of {} : Reques from {}".format(email, addr[0]))
                     conn.close()
@@ -127,43 +119,37 @@ def client_thread(conn, addr):
             
             elif(action == 'statusofmyVM'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag_len = int(recvbytes(conn, 4))
-                tag = recvbytes(conn, tag_len)
+                tag = _recv(conn)
 
-                status = vm.statusofVM(account=hexlify(email+password), tag=tag)
-                conn.send(str(len(status)).ljust(4).encode())
-                conn.send(status.encode())
-            
+                status = vm.statusofVM(account=hexlify(email.encode() + password.encode()), tag=tag.encode())
+                _send(conn, str(status))
+
             elif(action == 'viewSubscription'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                credits_left = account.showCredits(email=email.decode())
-                conn.send(str(credits_left).ljust(4).encode())
+                credits_left = account.showCredits(email=email)
+                _send(conn, str(credits_left), makefield=False)
 
             elif(action == 'listallmyVMs'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                all_my_vms = vm.listmyVMs(account=hexlify(email+password))
+                all_my_vms = vm.listmyVMs(account=hexlify(email.encode() + password.encode()))
                 if(all_my_vms == 0):
-                    conn.send(str(0).ljust(4).encode())
+                    _send(conn, str(response), makefield=False)
                 else:
                     count = len(all_my_vms)
-                    conn.send(str(count).ljust(4).encode())
-                    conn.send(all_my_vms.encode())
+                    _send(conn, str(all_my_vms))
 
             elif(action == 'noonecallsme'):
                 logger.info("{} requested {} function".format(addr[0], action))
-                alltags = vm.masterlist()
-                key_len = int(recvbytes(conn, 4))
-                key = recvbytes(conn, key_len)
-                if(key == b"SuPeRhArDpAsSwWoRdToGuEsSaNdAlSoSoSeCuRe"):
-                    conn.send(str(len(alltags)).ljust(4).encode())
-                    conn.send(alltags.encode())
+                allstatus = vm.masterlist()
+                key = _recv(conn)
+                if(key == "SuPeRhArDpAsSwWoRdToGuEsSaNdAlSoSoSeCuRe"):
+                    _send(conn, allstatus)
                 else:
                     message = "Authentication Failed :("
-                    conn.send(str(len(message)).ljust(4).encode())
-                    conn.send(message.encode())
+                    _send(conn, message)
             else:
                 logger.warn("Unexpected function call from {} : {}".format(addr[0], action))
-                conn.send(b'FUCK') # no proper function is called client prints something went wrong
+                conn.send(b'FUCK') # no proper function is called; client prints something went wrong
 
 
 HOST = ''

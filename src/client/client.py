@@ -31,7 +31,8 @@ def menu(io):
             deleteacc(io)
         elif(choice == 8):
             _exit(io)
-        pass
+        else:
+            menu(io)
     except KeyboardInterrupt:
         _exit(io)
 
@@ -47,19 +48,28 @@ def recvbytes(conn, remains):
 
 def _exit(io):
     print("See You Again!!")
-    io.send(b'1337')
+    io.send(b'-337')
     io.close()
     exit()
 
+def catchint(io):
+    response = int(io.recv(8).replace(b'\x00',b''))
+    if(response == -337):
+        print("The server terminated the connection!!")
+        io.close()
+        exit(-1)
+    else:
+        return response
+
 def deleteacc(io):
-    data = str(0).ljust(4)
-    data += str(len('deleteAccount')).ljust(4)
+    data = str(0).ljust(8, chr(0))
+    data += str(len('deleteAccount')).ljust(8, chr(0))
     data += 'deleteAccount'
     password = input("For security reasons, please enter your password: ")
-    data += str(len(password)).ljust(4)
+    data += str(len(password)).ljust(8, chr(0))
     data += password
     io.send(data.encode())
-    response = int(io.recv(4))
+    response = catchint(io)
     if(response == 2):
         print("You entered a wrong password.")
         menu(io)
@@ -67,20 +77,20 @@ def deleteacc(io):
         print("Successfully Removed your Account, Bye!")
 
 def viewsubscription(io):
-    data = str(0).ljust(4)
-    data += str(len('viewSubscription')).ljust(4)
+    data = str(0).ljust(8, chr(0))
+    data += str(len('viewSubscription')).ljust(8, chr(0))
     data += 'viewSubscription'
     io.send(data.encode())
-    _credits = int(io.recv(4))
+    _credits = catchint(io)
     print("You have {} credits left in your account".format(_credits))
     menu(io)
 
 def listmyvms(io):
-    data = str(0).ljust(4)
-    data += str(len('listallmyVMs')).ljust(4)
+    data = str(0).ljust(8, chr(0))
+    data += str(len('listallmyVMs')).ljust(8, chr(0))
     data += 'listallmyVMs'
     io.send(data.encode())
-    count = int(io.recv(4))
+    count = catchint(io)
     if(count == 0):
         print("You have 0 VMs associated to your account")
         menu(io)
@@ -90,28 +100,28 @@ def listmyvms(io):
         menu(io)
 
 def vmstatus(io):
-    data = str(0).ljust(4)
-    data += str(len('statusofmyVM')).ljust(4)
+    data = str(0).ljust(8, chr(0))
+    data += str(len('statusofmyVM')).ljust(8, chr(0))
     data += 'statusofmyVM'
     vm_tag = input("VM Tag: ")
-    data += str(len(vm_tag)).ljust(4)
+    data += str(len(vm_tag)).ljust(8, chr(0))
     data += vm_tag
     io.send(data.encode())
-    data_len = int(io.recv(4))
+    data_len = catchint(io)
     status = recvbytes(io, data_len)
     print(status.decode())
     print("\n\n")
     menu(io)
 
 def deletevm(io):
-    data = str(0).ljust(4)
-    data += str(len('deleteVM')).ljust(4)
+    data = str(0).ljust(8, chr(0))
+    data += str(len('deleteVM')).ljust(8, chr(0))
     data += 'deleteVM'
     vm_tag = input("VM Tag: ")
-    data += str(len(vm_tag)).ljust(4)
+    data += str(len(vm_tag)).ljust(8, chr(0))
     data += vm_tag
     io.send(data.encode())
-    response = int(io.recv(4))
+    response = catchint(io)
     if(response == 1):
         print("VM with the requested tag not found")
         menu(io)
@@ -120,7 +130,7 @@ def deletevm(io):
         menu(io)
 
 def modifyvm(io):
-    data = str(0).ljust(4)
+    data = str(0).ljust(8, chr(0))
     print("""
     1. Edit Firewall Rules
     2. Scale a VM
@@ -133,10 +143,10 @@ def modifyvm(io):
         """)
         proto = int(input())
         if(proto == 1):
-            data += str(len('ruleAddTCP')).ljust(4)
+            data += str(len('ruleAddTCP')).ljust(8, chr(0))
             data += 'ruleAddTCP'
             vm_tag = input("VM Tag: ")
-            data += str(len(vm_tag)).ljust(4)
+            data += str(len(vm_tag)).ljust(8, chr(0))
             data += vm_tag
 
             port = int(input("Port: "))
@@ -152,9 +162,9 @@ def modifyvm(io):
             2. Close {} TCP Port
             """.format(port, port))
             operation = int(input()) 
-            data += str(operation).ljust(4)
+            data += str(operation).ljust(8, chr(0))
             io.send(data.encode())
-            response = int(io.recv(4))
+            response = catchint(io)
             if(operation == 1):
                 action = 'open'
             else:
@@ -165,14 +175,18 @@ def modifyvm(io):
             elif(response == 1):
                 print("TCP port {} already {}ed".format(port, action))
                 menu(io)
-            else:
+            elif (response == 2):
                 print("VM with the requested tag not found")
                 menu(io)
+            else:
+                print("Something Went Wrong!!")
+                _exit(io)
+
         elif(proto == 2):
-            data += str(len('ruleAddUDP')).ljust(4)
+            data += str(len('ruleAddUDP')).ljust(8, chr(0))
             data += 'ruleAddUDP'
             vm_tag = input("VM Tag: ")
-            data += str(len(vm_tag)).ljust(4)
+            data += str(len(vm_tag)).ljust(8, chr(0))
             data += vm_tag
 
             port = int(input("Port: "))
@@ -186,9 +200,9 @@ def modifyvm(io):
             2. Close {} UDP Port
             """.format(port, port))
             operation = int(input()) 
-            data += str(operation).ljust(4)
+            data += str(operation).ljust(8, chr(0))
             io.send(data.encode())
-            response = int(io.recv(4))
+            response = catchint(io)
             if(operation == 1):
                 action = 'open'
             else:
@@ -199,9 +213,12 @@ def modifyvm(io):
             elif(response == 1):
                 print("UDP port {} already {}ed".format(port, action))
                 menu(io)
-            else:
+            elif(response == 2):
                 print("VM with the requested tag not found")
                 menu(io)
+            else:
+                print("Something Went Wrong!!")
+                _exit(io)
         
         else:
             print("Undefined choice selected")
@@ -213,11 +230,11 @@ def modifyvm(io):
         """)
         resource = int(input())
         if(resource == 1):
-            data += str(len('scaleMemory')).ljust(4)
+            data += str(len('scaleMemory')).ljust(8, chr(0))
             data += 'scaleMemory'
 
             vm_tag = input("VM Tag: ")
-            data += str(len(vm_tag)).ljust(4)
+            data += str(len(vm_tag)).ljust(8, chr(0))
             data += vm_tag
 
             print("""
@@ -228,10 +245,10 @@ def modifyvm(io):
             
             if(operation == 1):
                 count = int(input("Enter how many GB should be added: "))
-                data += str(operation).ljust(4)
-                data += str(count).ljust(4)
+                data += str(operation).ljust(8, chr(0))
+                data += str(count).ljust(8, chr(0))
                 io.send(data.encode())
-                response = int(io.recv(4))
+                response = catchint(io)
                 if(response == 0):
                     print("Successfully Added {} GB memory to your VM".format(count))
                     menu(io)
@@ -243,10 +260,10 @@ def modifyvm(io):
                     menu(io)
             elif(operation == 2):
                 count = int(input("Enter how many GB should be removed: "))
-                data += str(operation).ljust(4)
-                data += str(count).ljust(4)
+                data += str(operation).ljust(8, chr(0))
+                data += str(count).ljust(8, chr(0))
                 io.send(data.encode())
-                response = int(io.recv(4))
+                response = catchint(io)
                 if(response == 0):
                     print("Successfully Removed {} GB memory to your VM".format(count))
                     menu(io)
@@ -260,10 +277,10 @@ def modifyvm(io):
                 print("Undefined option selected.")
                 menu(io)
         elif(resource == 2):
-            data += str(len('scaleCPU')).ljust(4)
+            data += str(len('scaleCPU')).ljust(8, chr(0))
             data += 'scaleCPU'
             vm_tag = input("VM Tag: ")
-            data += str(len(vm_tag)).ljust(4)
+            data += str(len(vm_tag)).ljust(8, chr(0))
             data += vm_tag
             print("""
             1. Upscale CPU
@@ -272,10 +289,10 @@ def modifyvm(io):
             operation = int(input())
             if(operation == 1):
                 count = int(input("Enter how many CPUs should be added: "))
-                data += str(operation).ljust(4)
-                data += str(count).ljust(4)
+                data += str(operation).ljust(8, chr(0))
+                data += str(count).ljust(8, chr(0))
                 io.send(data.encode())
-                response = int(io.recv(4))
+                response = catchint(io)
                 if(response == 0):
                     print("Successfully Added {} CPUs to your VM".format(count))
                     menu(io)
@@ -285,12 +302,16 @@ def modifyvm(io):
                 elif(response == 2):
                     print("Action Failed, VM with the requested tag not found.")
                     menu(io)
+                else:
+                    print("Something Went Wrong!!")
+                    _exit(io)
+
             elif(operation == 2):
                 count = int(input("Enter how many CPUs should be removed: "))
-                data += str(operation).ljust(4)
-                data += str(count).ljust(4)
+                data += str(operation).ljust(8, chr(0))
+                data += str(count).ljust(8, chr(0))
                 io.send(data.encode())
-                response = int(io.recv(4))
+                response = catchint(io)
                 if(response == 0):
                     print("Successfully Removed {} CPUs to your VM".format(count))
                     menu(io)
@@ -300,6 +321,9 @@ def modifyvm(io):
                 elif(response == 2):
                     print("Action Failed, VM with the requested tag not found.")
                     menu(io)
+                else:
+                    print("Something Went Wrong!!")
+                    _exit(io)
             else:
                 print("Undefined option selected.")
                 menu(io)
@@ -311,18 +335,18 @@ def modifyvm(io):
         menu(io)
 
 def createvm(io):
-    data = str(0).ljust(4)
-    data += str(len('createVM')).ljust(4)
+    data = str(0).ljust(8, chr(0))
+    data += str(len('createVM')).ljust(8, chr(0))
     data += 'createVM'
     vm_name = input("VM Name: ")
-    data += str(len(vm_name)).ljust(4)
+    data += str(len(vm_name)).ljust(8, chr(0))
     data += vm_name
 
     vm_tag = input("VM Tag: ")
-    data += str(len(vm_tag)).ljust(4)
+    data += str(len(vm_tag)).ljust(8, chr(0))
     data += vm_tag
     io.send(data.encode())
-    response = int(io.recv(4))
+    response = catchint(io)
     if(response == 2):
         print("Funds not sufficient to spawn a VM")
         menu(io)
@@ -338,55 +362,59 @@ def createvm(io):
 
 
 def register(io):
-    data='1'.ljust(4)
+    data='1'.ljust(8, chr(0))
     username = input("Username: ")
-    data+=str(len(username)).ljust(4)
+    data+=str(len(username)).ljust(8, chr(0))
     data+=username
 
     email = input("Email: ")
-    data+=str(len(email)).ljust(4)
+    data+=str(len(email)).ljust(8, chr(0))
     data+=email
 
     password = input("Password: ")
-    data+=str(len(password)).ljust(4)
+    data+=str(len(password)).ljust(8, chr(0))
     data+=password
 
     io.send(data.encode())
-    response = int(io.recv(4))
+    response = catchint(io)
 
     if(int(response == 1)):
         print("Email already Taken :(")
-        # io.send(b"1337")
-        # io.close()
         _exit(io)
     elif(int(response) == 2):
         print("Password not greater than 12 :/")
         exit()
-    else:
+    elif(response == 0):
         print("Registration Successful")
+    else:
+        print("Something Went Wrong!!")
+        _exit(io)
         
 
 
 def login(io):
-    data='2'.ljust(4)
+    data='2'.ljust(8, chr(0))
     email = input("Email: ")
-    data+=str(len(email)).ljust(4)
+    data+=str(len(email)).ljust(8, chr(0))
     data+=email
 
     password = input("Password: ")
-    data+=str(len(password)).ljust(4)
+    data+=str(len(password)).ljust(8, chr(0))
     data+=password
     io.send(data.encode())
-    response = int(io.recv(4))
+    response = catchint(io)
     if(response == 0):
         print("Successfully logged in")
         menu(io)
     elif(response == 1):
         print("User not found")
         exit()
-    else:
+    elif(response == 2):
         print("Password Incorrect")
         exit()
+    else:
+        print("Something Went Wrong")
+        _exit(io)
 
 
 def start(io):

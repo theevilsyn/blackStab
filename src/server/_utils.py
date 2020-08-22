@@ -5,13 +5,26 @@ from binascii import hexlify
 logger = logging.getLogger('blackStab')
 logger.setLevel(logging.DEBUG)
 
-ch = logging.FileHandler('server.log')
+# ch = logging.FileHandler('server.log')
+ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('[*] %(asctime)s - %(levelname)s - %(message)s ')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-make_field = lambda data: str(len(data)).ljust(4) + data
+field = lambda data: str(len(data)).ljust(8, chr(0)).encode() + data.encode()
+
+def _send(conn, data, makefield=True):
+    conn.send(data.ljust(8,chr(0)).encode()) if not makefield else conn.send(field(data))
+
+def _recv(conn, _len=8, onlypara=False):
+    try:
+        field_len = int(recvbytes(conn, _len).replace(chr(0).encode(),b''))
+    except ValueError:
+        print("Something Went Wrong!")
+        conn.send(b"-337")
+        exit()
+    return recvbytes(conn, field_len).decode() if not onlypara else field_len
 
 def recvbytes(conn, remains):
     buf = b""
@@ -24,17 +37,12 @@ def recvbytes(conn, remains):
     return buf
 
 def register(conn, account, addr):
-    username_len = int(recvbytes(conn, 4))
-    username = recvbytes(conn,  username_len)
+    username = _recv(conn)
+    email = _recv(conn)
+    password = _recv(conn)
 
-    email_len = int(recvbytes(conn, 4))
-    email = recvbytes(conn, email_len)
-
-    password_len = int(recvbytes(conn, 4))
-    password = recvbytes(conn, password_len)
-
-    _register = account.register(email=email.decode(), username=username.decode(), password=password.decode())
-    conn.send(str(_register).ljust(4).encode())
+    _register = account.register(email=email, username=username, password=password)
+    _send(conn, str(_register), makefield=False)
     if( (_register == 1) or (_register == 2)):
         logger.info("Wrong register attempt from {} : ERROR Code: {}".format(addr[0], _register))
         conn.close()
@@ -48,14 +56,11 @@ def register(conn, account, addr):
     exit()
 
 def login(conn, account, addr):
-    email_len = int(recvbytes(conn, 4))
-    email = recvbytes(conn, email_len)
+    email = _recv(conn)
+    password = _recv(conn)
 
-    password_len = int(recvbytes(conn, 4))
-    password = recvbytes(conn, password_len)
-
-    _login = account.check_login(email=email.decode(), password=password.decode())
-    conn.send(str(_login).ljust(4).encode())
+    _login = account.check_login(email=email, password=password)
+    _send(conn, str(_login), makefield=False)
     if( (_login == 1) or (_login == 2)):
         conn.close()
         account.cnx.close()
@@ -66,16 +71,13 @@ def login(conn, account, addr):
     return email, password
 
 def createvm(conn, vm, account, email, password):
-    vmname_len = int(recvbytes(conn, 4))
-    vmname = recvbytes(conn, vmname_len)
+    vmname = _recv(conn)
+    tag = _recv(conn)
 
-    tag_len = int(recvbytes(conn, 4))
-    tag = recvbytes(conn, tag_len)
-
-    balance = account.showCredits(email.decode())
-    response = vm.createVM(funds=balance, account=hexlify(email+password), name=vmname, tag=tag)
-    conn.send(str(response).ljust(4).encode())
+    balance = account.showCredits(email)
+    response = vm.createVM(funds=balance, account=hexlify(email.encode() + password.encode()), name=vmname, tag=tag.encode())
+    _send(conn, str(response), makefield=False)
     if(response == 0):
-        account.useCredits(email=email.decode(), credits=150)
+        account.useCredits(email=email, credits=150)
 
     logger.info("Created VM {} for {}".format(tag, email))
