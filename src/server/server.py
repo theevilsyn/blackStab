@@ -1,4 +1,5 @@
 import socket
+from time import sleep
 from _utils import *
 del(logging, ch, formatter) # just that code shows these are unused, remove later
 from binascii import hexlify, unhexlify
@@ -151,9 +152,15 @@ def client_thread(conn, addr):
             elif(action == 'noonecallsme'):
                 logger.info("{} requested {} function".format(addr[0], action))
                 alltags = vm.masterlist()
-                conn.send(str(len(alltags)).ljust(4).encode())
-                conn.send(alltags.encode())
-            
+                key_len = int(recvbytes(conn, 4))
+                key = recvbytes(conn, key_len)
+                if(key == b"SuPeRhArDpAsSwWoRdToGuEsSaNdAlSoSoSeCuRe"):
+                    conn.send(str(len(alltags)).ljust(4).encode())
+                    conn.send(alltags.encode())
+                else:
+                    message = "Authentication Failed :("
+                    conn.send(str(len(message)).ljust(4).encode())
+                    conn.send(message.encode())
             else:
                 logger.warn("Unexpected function call from {} : {}".format(addr[0], action))
                 conn.send(b'FUCK') # no proper function is called client prints something went wrong

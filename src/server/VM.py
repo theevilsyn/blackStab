@@ -2,6 +2,7 @@ from json import load
 from binascii import hexlify, unhexlify
 from shutil import rmtree
 import mysql.connector
+from base64 import b64encode as encode
 from mysql.connector import errorcode
 from os import makedirs, path, remove, listdir, walk
 from dataclasses import dataclass
@@ -137,11 +138,12 @@ class VM:
         vm = eval(unhexlify(open(path.join(self.region, account, tag)).read()))
         data = """
         VM Name: {}
-        VM Tag: {}
+        VM Tag: {} // encoded for security reasons
+        Associated to Account: {}
         TCP Ports Open: {}
         UDP Ports Open: {}
         Specifications: Number of CPUs are {} and the RAM is {} GB
-        """.format(vm.name.decode(), vm.tag.decode(), str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
+        """.format(vm.name.decode(), encode(vm.tag).decode(), account.decode(), str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
         return data
 
     def listmyVMs(self, account):

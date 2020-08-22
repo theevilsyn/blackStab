@@ -1,6 +1,5 @@
 import socket
-
-## max port number should be 65535 in input
+from sys import argv
 
 def menu(io):
     print("""
@@ -35,6 +34,16 @@ def menu(io):
         pass
     except KeyboardInterrupt:
         _exit(io)
+
+def recvbytes(conn, remains):
+    buf = b""
+    while remains:
+        data = conn.recv(remains)
+        if not data:
+            break
+        buf += data
+        remains -= len(data)
+    return buf
 
 def _exit(io):
     print("See You Again!!")
@@ -89,7 +98,7 @@ def vmstatus(io):
     data += vm_tag
     io.send(data.encode())
     data_len = int(io.recv(4))
-    status = io.recv(data_len)
+    status = recvbytes(io, data_len)
     print(status.decode())
     print("\n\n")
     menu(io)
@@ -399,7 +408,7 @@ def start(io):
 
 
 io = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-io.connect(('localhost', 9999))
+io.connect((argv[1], int(argv[2])))
 
 try:
     start(io)        
