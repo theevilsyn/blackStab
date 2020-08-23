@@ -23,6 +23,7 @@ def _recv(conn, _len=8, onlypara=False):
     except ValueError:
         print("Something Went Wrong!")
         conn.send(b"-337")
+        conn.close()
         exit()
     return recvbytes(conn, field_len).decode() if not onlypara else field_len
 
@@ -73,9 +74,9 @@ def login(conn, account, addr):
 def createvm(conn, vm, account, email, password):
     vmname = _recv(conn)
     tag = _recv(conn)
-
+    imageid = _recv(conn, onlypara=True)
     balance = account.showCredits(email)
-    response = vm.createVM(funds=balance, account=hexlify(email.encode() + password.encode()), name=vmname, tag=tag.encode())
+    response = vm.createVM(funds=balance, account=hexlify(email.encode() + password.encode()), name=vmname, tag=tag.encode(), image=imageid)
     _send(conn, str(response), makefield=False)
     if(response == 0):
         account.useCredits(email=email, credits=150)

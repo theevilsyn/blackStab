@@ -15,33 +15,37 @@ with open("config.json",'r') as file:
 class VMStruct:
     name: str
     tag: str
+    image: str
     udpPorts: list
     tcpPorts: list
     cpu: int = 2
     ram: int = 4
 
+"""
+OSes | 0--> Archlinux | 1--> Ubuntu16 | 2--> Ubuntu18 |
+     | 3--> CentOS7 | 4--> Oracle Linux 6 | 5--> OpenSUSE | 6-->Windows Server |
+"""
 class VM:
     def __init__(self):
         self.region = CONFIG['region'].encode()
-        self.functions = {
-            "createVM": self.createVM,
-            "modifyFirewall": self.modifyFirewall,
-            "modifyShape": self.modifyShape,
-            "deleteVM": self.deleteVM,
-            "removeAccount": self.removeAccount,
-            "statusofVM": self.statusofVM,
-            "listmyVMs": self.listmyVMs,
-            "masterlist": self.masterlist
+        self.images = {
+            0: "Archlinux",
+            1: "Ubuntu 16.04",
+            2: "Ubuntu 18.04",
+            3: "CentOS 7",
+            4: "Oracle Linux 6",
+            5: "OpenSUSE by SUSE",
+            6: "Windows Server 2019 LTSC"
         }
 
         return
 
-    def createVM(self, funds, account, name, tag):
+    def createVM(self, funds, account, name, tag, imageid):
         if(not (funds > 100)):
             return 2
         if(not path.exists(path.join(self.region, account))):
             makedirs(path.join(self.region, account))
-        vm = VMStruct(name=name, tag=tag, tcpPorts=[22,80], udpPorts=[53])
+        vm = VMStruct(name=name, tag=tag, image=self.images[imageid], tcpPorts=[22,80] , udpPorts=[53])
         if(not path.exists(path.join(self.region, account, tag))):
             open(path.join(self.region, account, tag), 'w').write(hexlify(str(vm).encode()).decode())
         else:

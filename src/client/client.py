@@ -238,7 +238,7 @@ def modifyvm(io):
             data += vm_tag
 
             print("""
-            1. Add RAM
+            1. Add RAM  
             2. Remove RAM
             """)
             operation = int(input())
@@ -345,6 +345,20 @@ def createvm(io):
     vm_tag = input("VM Tag: ")
     data += str(len(vm_tag)).ljust(8, chr(0))
     data += vm_tag
+
+    image = int(input("""
+    Please Select the Operating System for your VM
+    Available Options:
+        0: Archlinux
+        1: Ubuntu 16.04
+        2: Ubuntu 18.04
+        3: CentOS 7
+        4: Oracle Linux 6
+        5: OpenSUSE by SUSE
+        6: Windows Server 2019 LTSC
+
+    """))
+    data += str(image).ljust(8, chr(0))
     io.send(data.encode())
     response = catchint(io)
     if(response == 2):
