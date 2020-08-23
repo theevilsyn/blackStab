@@ -37,8 +37,8 @@ def recvbytes(conn, remains):
     return buf
 
 def register(conn, account, addr):
-    username = _recv(conn)
     email = _recv(conn)
+    username = _recv(conn)
     password = _recv(conn)
 
     _register = account.register(email=email, username=username, password=password)

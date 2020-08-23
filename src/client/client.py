@@ -363,13 +363,14 @@ def createvm(io):
 
 def register(io):
     data='1'.ljust(8, chr(0))
-    username = input("Username: ")
-    data+=str(len(username)).ljust(8, chr(0))
-    data+=username
 
     email = input("Email: ")
     data+=str(len(email)).ljust(8, chr(0))
     data+=email
+
+    username = input("Username: ")
+    data+=str(len(username)).ljust(8, chr(0))
+    data+=username
 
     password = input("Password: ")
     data+=str(len(password)).ljust(8, chr(0))
