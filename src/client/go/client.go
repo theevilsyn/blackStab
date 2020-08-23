@@ -28,12 +28,21 @@ func menu(conn net.Conn) {
 	case 1:
 		createvm(conn)
 	case 2:
+		modifyvm(conn)
 	case 3:
+		deletevm(conn)
 	case 4:
+		vmstatus(conn)
 	case 5:
+		listmyvms(conn)
 	case 6:
+		viewsubscription(conn)
 	case 7:
+		deleteacc(conn)
+	case 8:
+		_exit(conn)
 	default:
+		menu(conn)
 	}
 }
 

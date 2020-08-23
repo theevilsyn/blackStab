@@ -7,7 +7,84 @@ import (
 	"strings"
 )
 
-func modifyVM(conn net.Conn) {
+func deleteacc(conn net.Conn) {
+	var password string
+	sender := padint(0)
+	sender += padint(len("deleteAccount"))
+	sender += "deleteAccount"
+	fmt.Print("For security reasons, please enter your password: ")
+	fmt.Scan(&password)
+	sender += padint(len(password))
+	sender += password
+	send(conn, sender)
+	resp := getresp(conn)
+	if resp == 0 {
+
+	}
+}
+
+func viewsubscription(conn net.Conn) {
+	sender := padint(0)
+	sender += padint(len("viewSubscription"))
+	sender += "viewSubscription"
+	send(conn, sender)
+	credits := getresp(conn)
+	fmt.Println("You have ", credits, " $ worth credits left in your free subscription")
+	menu(conn)
+}
+
+func listmyvms(conn net.Conn) {
+	sender := padint(0)
+	sender += padint(len("listallmyVMs"))
+	sender += "listallmyVMs"
+	send(conn, sender)
+	count := getresp(conn)
+	if count == 0 {
+		fmt.Println("You have 0 VMs associated to your account")
+		menu(conn)
+	} else {
+		list := recv(conn, count)
+		fmt.Print(list)
+	}
+}
+
+func vmstatus(conn net.Conn) {
+	var vmtag string
+	sender := padint(0)
+	sender += padint(len("statusofmyVM"))
+	sender += "statusofmyVM"
+	fmt.Print("Enter VM Tag")
+	fmt.Scan(&vmtag)
+	sender += padint(len(vmtag))
+	sender += vmtag
+	send(conn, sender)
+	statuslen := getresp(conn)
+	status := recv(conn, statuslen)
+	fmt.Print(status)
+	menu(conn)
+}
+
+func deletevm(conn net.Conn) {
+	var vmtag string
+	sender := padint(0)
+	sender += padint(len("deleteVM"))
+	sender += "deleteVM"
+	fmt.Print("Enter VM Tag: ")
+	fmt.Scan(&vmtag)
+	sender += padint(len(vmtag))
+	sender += vmtag
+	send(conn, sender)
+	resp := getresp(conn)
+	if resp == 0 {
+		fmt.Println("Successfully deleted the VM")
+		menu(conn)
+	} else if resp == 1 {
+		fmt.Println("Action failed, the VM with requested tag not found.")
+		menu(conn)
+	}
+}
+
+func modifyvm(conn net.Conn) {
 	var port int
 	var proto int
 	var modify int
