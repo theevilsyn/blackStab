@@ -28,6 +28,7 @@ OSes | 0--> Archlinux | 1--> Ubuntu16 | 2--> Ubuntu18 |
 class VM:
     def __init__(self):
         self.region = CONFIG['region'].encode()
+        self.statuscount = 25
         self.images = {
             0: "Archlinux",
             1: "Ubuntu 16.04",
@@ -158,11 +159,14 @@ class VM:
         vmtags = '\n'.join(listdir(path.join(self.region.decode(), account.decode())))
         return vmtags
 
-    def masterlist(self):
+    def masterlist(self): # latest VMs that are spawned
         vms = []
         for account in listdir(self.region):
             for tag in listdir(path.join(self.region, account)):
                 vms.append(self.statusofVM(account=account, tag=tag))
+                vms.sort(key=lambda x: path.getatime(path.join(account, x)))
+                if(len(vms) > self.statuscount):
+                    vms = vms[:self.statuscount]
         return '\n'.join(vms)
 
 class accounts:

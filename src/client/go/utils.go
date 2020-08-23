@@ -10,8 +10,8 @@ import (
 
 // take an int and pad it with '\x00's
 func padint(field int) string {
-	dataa := strings.ReplaceAll(fmt.Sprintf("%-8v", field), " ", "\x00")
-	return (dataa)
+	data := strings.ReplaceAll(fmt.Sprintf("%-8v", field), " ", "\x00")
+	return (data)
 }
 
 func _exit(conn net.Conn) {
