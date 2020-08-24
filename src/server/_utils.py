@@ -26,7 +26,10 @@ def _recv(conn, _len=8, onlypara=False):
         field_len = int(recvbytes(conn, _len).replace(chr(0).encode(),b''))
     except ValueError:
         print("Something Went Wrong!")
-        conn.send(b"-337")
+        try:
+            conn.send(b"-337")
+        except BrokenPipeError:
+            pass
         conn.close()
         exit()
     return recvbytes(conn, field_len).decode() if not onlypara else field_len
