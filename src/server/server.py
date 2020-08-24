@@ -31,6 +31,10 @@ def client_thread(conn, addr):
         'listallmyVMs',
         'noonecallsme'
     ]
+    if(authenticate(conn)):
+        _send(conn, str(0), makefield=False)
+    else:
+        _send(conn, str(-1), makefield=False)
     action_code = _recv(conn, onlypara=True)
     if(action_code == 1): # register
         logger.info("{} requested register function".format(addr[0]))
@@ -133,7 +137,7 @@ def client_thread(conn, addr):
                 logger.info("{} requested {} function".format(addr[0], action))
                 all_my_vms = vm.listmyVMs(account=hexlify(email.encode() + password.encode()))
                 if(all_my_vms == 0):
-                    _send(conn, str(response), makefield=False)
+                    _send(conn, str(0), makefield=False)
                 else:
                     count = len(all_my_vms)
                     _send(conn, str(all_my_vms))

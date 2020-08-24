@@ -19,7 +19,11 @@ func deleteacc(conn net.Conn) {
 	send(conn, sender)
 	resp := getresp(conn)
 	if resp == 0 {
-
+		fmt.Println("Successfully Removed your Account, Bye!")
+		_exit(conn)
+	} else {
+		fmt.Println("Password Incorrect :(")
+		menu(conn)
 	}
 }
 
@@ -45,6 +49,8 @@ func listmyvms(conn net.Conn) {
 	} else {
 		list := recv(conn, count)
 		fmt.Print(list)
+		fmt.Println()
+		menu(conn)
 	}
 }
 
@@ -60,7 +66,7 @@ func vmstatus(conn net.Conn) {
 	send(conn, sender)
 	statuslen := getresp(conn)
 	status := recv(conn, statuslen)
-	fmt.Print(status)
+	fmt.Println(status)
 	menu(conn)
 }
 
@@ -106,7 +112,7 @@ func modifyvm(conn net.Conn) {
 			sender += "ruleAddTCP"
 			sender += padint(len(vmtag))
 			sender += vmtag
-			fmt.Print("1. Open a TCP Port\n2. Close a TCP Port\n")
+			fmt.Print("Enter the port: ")
 			fmt.Scan(&port)
 			if port > 65535 {
 				fmt.Println("Please select a proper port next time. No scope for overflow here :P")
@@ -116,9 +122,9 @@ func modifyvm(conn net.Conn) {
 			fmt.Print("1. Open TCP Port ", port, "\n2. Close TCP Port ", port, "\n")
 			fmt.Scan(&operation)
 			if operation == 1 {
-				action = "open"
+				action = "opened"
 			} else if operation == 2 {
-				action = "clos"
+				action = "closed"
 			} else {
 				fmt.Println("Please choose a proper port next time.")
 				menu(conn)
@@ -127,7 +133,7 @@ func modifyvm(conn net.Conn) {
 			send(conn, sender)
 			resp := getresp(conn)
 			if resp == 0 {
-				fmt.Println("Successfully ", action, "ed the TCP Port ", port)
+				fmt.Println("Successfully ", action, " the TCP Port ", port)
 				menu(conn)
 			} else if resp == 1 {
 				fmt.Println("TCP Port ", port, "already ", action, "ed")
@@ -144,7 +150,7 @@ func modifyvm(conn net.Conn) {
 			sender += "ruleAddUDP"
 			sender += padint(len(vmtag))
 			sender += vmtag
-			fmt.Print("1. Open a UDP Port\n2. Close a UDP Port\n")
+			fmt.Print("Enter the port: ")
 			fmt.Scan(&port)
 			if port > 65535 {
 				fmt.Println("Please select a proper port next time. No scope for overflow here :P")
@@ -154,9 +160,9 @@ func modifyvm(conn net.Conn) {
 			fmt.Print("1. Open UDP Port ", port, "\n2. Close UDP Port ", port, "\n")
 			fmt.Scan(&operation)
 			if operation == 1 {
-				action = "open"
+				action = "opened"
 			} else if operation == 2 {
-				action = "clos"
+				action = "closed"
 			} else {
 				fmt.Println("Please choose a proper port next time.")
 				menu(conn)
@@ -164,7 +170,7 @@ func modifyvm(conn net.Conn) {
 			sender += padint(operation)
 			resp := getresp(conn)
 			if resp == 0 {
-				fmt.Println("Successfully ", action, "ed the UDP Port ", port)
+				fmt.Println("Successfully ", action, " the UDP Port ", port)
 				menu(conn)
 			} else if resp == 1 {
 				fmt.Println("UDP Port ", port, "already ", action, "ed")
@@ -316,10 +322,21 @@ func createvm(conn net.Conn) {
 
 	}
 	sender := padint(0) + padint(len(funcname)) + funcname + padint(len(vmname)) + vmname + padint(len(vmtag)) + vmtag + padint(image)
-	fmt.Println(sender)
+	send(conn, sender)
 	resp := getresp(conn)
 	if resp == 0 {
-		fmt.Println("Successfully created the VM")
+		fmt.Println("Successfully created the VM print image, config and say you canyou can scale the vm")
+		details := padint(0)
+		details += padint(len("statusofmyVM"))
+		details += "statusofmyVM"
+		details += padint(len(vmtag))
+		details += vmtag
+		send(conn, details)
+		resp := getresp(conn)
+		fmt.Print("Here are the details of the VM that has just been spawned\n")
+		fmt.Print(recv(conn, resp))
+		fmt.Println()
+		menu(conn)
 	} else if resp == 1 {
 		fmt.Println("VM with the requested tag is already present")
 		menu(conn)
@@ -374,8 +391,8 @@ func login(conn net.Conn) {
 		fmt.Println("Error: ", err.Error())
 	}
 	if resp == 0 {
-		print("Successfully Logged In")
-		// menu(conn)
+		fmt.Println("Successfully Logged In")
+		menu(conn)
 	} else if resp == 1 {
 		fmt.Println("User Not Found")
 		_exit(conn)

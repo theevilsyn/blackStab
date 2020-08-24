@@ -8,6 +8,10 @@ import (
 )
 
 func start(conn net.Conn) {
+	// fig := figure.NewColorFigure("blackStab banner...", "doh", "green", true)
+	// fig.Print()
+	// fig.Scroll(3000, 600, "right")
+	auth(conn)
 	var choice int
 	fmt.Print(1, " Register\n", 2, " Login\n")
 	fmt.Scan(&choice)
@@ -57,8 +61,5 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	menu(conn)
-	// conn.Write([]byte(makefield(11)))
-	// fmt.Print(s)
-	// time.Sleep(5 * time.Second)
+	start(conn)
 }

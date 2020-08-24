@@ -144,11 +144,12 @@ class VM:
         data = """
         VM Name: {}
         VM Tag: {} // encoded for security reasons
+        Operating System: {}
         Associated to Account: {}
         TCP Ports Open: {}
         UDP Ports Open: {}
         Specifications: Number of CPUs are {} and the RAM is {} GB
-        """.format(vm.name, encode(vm.tag).decode(), account.decode(), str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
+        """.format(vm.name, encode(vm.tag).decode(), vm.image,account.decode(), str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
         return data
 
     def listmyVMs(self, account):
@@ -224,14 +225,10 @@ class accounts:
     def removeAccount(self, email, password):
         cnx = self.cnx
         cursor = cnx.cursor()
-        cursor.execute("SELECT * from users where email='{}'".format(email))
+        cursor.execute("SELECT password from users where email='{}'".format(email))
         acc_match = cursor.fetchall()
-        if(not len(acc_match)):
+        if(not (acc_match[0][0] == password)):
             return 1
-        else:
-            pass
-        if(not (acc_match[0][2] == password)):
-            return 2
         else:
             pass   
         _remove = ("DELETE FROM users "
