@@ -25,7 +25,7 @@ def _recv(conn, _len=8, onlypara=False):
     try:
         field_len = int(recvbytes(conn, _len).replace(chr(0).encode(),b''))
     except ValueError:
-        print("Something Went Wrong!")
+        logger.info("Disconnected {} upon their request".format(conn.getpeername()))
         try:
             conn.send(b"-337")
         except BrokenPipeError:
@@ -37,7 +37,11 @@ def _recv(conn, _len=8, onlypara=False):
 def recvbytes(conn, remains):
     buf = b""
     while remains:
-        data = conn.recv(remains)
+        try:
+            data = conn.recv(remains)
+        except ConnectionResetError:
+            print("Client disconnected")
+            exit(0)
         if not data:
             break
         buf += data
@@ -89,10 +93,8 @@ def authenticate(conn):
     _send(conn, finalchall)
     resp = b64decode(_recv(conn))
     if challengept == resp:
-        print("Authenticated")
         return True
     else:
-        print("Auth wrong")
         return False
 
 

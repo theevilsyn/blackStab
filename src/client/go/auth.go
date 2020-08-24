@@ -39,7 +39,7 @@ func auth(conn net.Conn) {
 	send(conn, sender)
 	resp := getresp(conn)
 	if resp == 0 {
-		fmt.Println("Authentication Complete")
+		fmt.Print()
 	} else {
 		fmt.Println("Authentication went wrong")
 		os.Exit(-1)

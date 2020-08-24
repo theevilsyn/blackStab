@@ -2,24 +2,27 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
 	"strings"
+
+	"github.com/common-nighthawk/go-figure"
 )
 
 func start(conn net.Conn) {
-	// fig := figure.NewColorFigure("blackStab banner...", "doh", "green", true)
-	// fig.Print()
-	// fig.Scroll(3000, 600, "right")
+	fig := figure.NewColorFigure("Connecting to blackStab...", "pepper", "red", true)
+	fig.Scroll(rand.Intn(3000-1000)+1000, 500, "right") // random 1~5 seconds waitime
 	auth(conn)
+	fig = figure.NewColorFigure("Welcome to blackStab Cloud", "smslant", "red", true)
+	fig.Print()
+	fmt.Println()
 	var choice int
 	fmt.Print(1, " Register\n", 2, " Login\n")
 	fmt.Scan(&choice)
 	if choice == 1 {
-		fmt.Println("You chose to register")
 		register(conn)
 	} else {
-		fmt.Println("You chose to login")
 		login(conn)
 	}
 }

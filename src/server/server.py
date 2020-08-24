@@ -32,8 +32,10 @@ def client_thread(conn, addr):
         'noonecallsme'
     ]
     if(authenticate(conn)):
+        logger.info("{} authenticated".format(addr[0]))
         _send(conn, str(0), makefield=False)
     else:
+        logger.info("Wrong auth attempt from {}")
         _send(conn, str(-1), makefield=False)
         conn.close()
         exit(-1)

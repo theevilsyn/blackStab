@@ -3,24 +3,36 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 )
 
 func deleteacc(conn net.Conn) {
+	var choice string
 	var password string
 	sender := padint(0)
 	sender += padint(len("deleteAccount"))
 	sender += "deleteAccount"
 	fmt.Print("For security reasons, please enter your password: ")
 	fmt.Scan(&password)
+	fmt.Println("Are you sure you want to delete your account? [y/n]")
+	fmt.Print("Choice >> ")
+	fmt.Scan(&choice)
+	if choice == "y" {
+		fmt.Print()
+	} else {
+		fmt.Println("Alright, taking you back to main menu")
+		menu(conn)
+	}
 	sender += padint(len(password))
 	sender += password
 	send(conn, sender)
 	resp := getresp(conn)
 	if resp == 0 {
 		fmt.Println("Successfully Removed your Account, Bye!")
-		_exit(conn)
+		// _exit(conn)
+		conn.Close()
 	} else {
 		fmt.Println("Password Incorrect :(")
 		menu(conn)
@@ -72,11 +84,22 @@ func vmstatus(conn net.Conn) {
 
 func deletevm(conn net.Conn) {
 	var vmtag string
+	var choice string
 	sender := padint(0)
 	sender += padint(len("deleteVM"))
 	sender += "deleteVM"
 	fmt.Print("Enter VM Tag: ")
 	fmt.Scan(&vmtag)
+	fmt.Println("Are you sure you want to delete the VM? [y/n]")
+	fmt.Print("Choice >> ")
+	fmt.Scan(&choice)
+	if choice == "y" {
+		fmt.Print()
+	} else {
+		fmt.Println("Alright, taking you back to main menu")
+		menu(conn)
+	}
+
 	sender += padint(len(vmtag))
 	sender += vmtag
 	send(conn, sender)
@@ -94,6 +117,7 @@ func modifyvm(conn net.Conn) {
 	var port int
 	var proto int
 	var modify int
+	var choice string
 	var quantity int
 	var resource int
 	var operation int // 0:1 -> open:close | 0:1 -> upscale:downscale
@@ -130,6 +154,15 @@ func modifyvm(conn net.Conn) {
 				menu(conn)
 			}
 			sender += padint(operation)
+			fmt.Println("Are you sure you want to modify the VM's TCP ingress rules? [y/n]")
+			fmt.Print("Choice >> ")
+			fmt.Scan(&choice)
+			if choice == "y" {
+				fmt.Print()
+			} else {
+				fmt.Println("Alright, taking you back to main menu")
+				menu(conn)
+			}
 			send(conn, sender)
 			resp := getresp(conn)
 			if resp == 0 {
@@ -168,6 +201,16 @@ func modifyvm(conn net.Conn) {
 				menu(conn)
 			}
 			sender += padint(operation)
+			fmt.Println("Are you sure you want to modify the VM's UDP ingress rules? [y/n]")
+			fmt.Print("Choice >> ")
+			fmt.Scan(&choice)
+			if choice == "y" {
+				fmt.Print()
+			} else {
+				fmt.Println("Alright, taking you back to main menu")
+				menu(conn)
+			}
+			send(conn, sender)
 			resp := getresp(conn)
 			if resp == 0 {
 				fmt.Println("Successfully ", action, " the UDP Port ", port)
@@ -202,6 +245,15 @@ func modifyvm(conn net.Conn) {
 				fmt.Print("Please enter the amount of RAM that should be added to the VM")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
+				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
+				fmt.Print("Choice >> ")
+				fmt.Scan(&choice)
+				if choice == "y" {
+					fmt.Print()
+				} else {
+					fmt.Println("Alright, taking you back to main menu")
+					menu(conn)
+				}
 				send(conn, sender)
 				resp := getresp(conn)
 				if resp == 0 {
@@ -218,6 +270,15 @@ func modifyvm(conn net.Conn) {
 				fmt.Print("Please enter the amount of RAM that should be removed from the VM")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
+				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
+				fmt.Print("Choice >> ")
+				fmt.Scan(&choice)
+				if choice == "y" {
+					fmt.Print()
+				} else {
+					fmt.Println("Alright, taking you back to main menu")
+					menu(conn)
+				}
 				send(conn, sender)
 				resp := getresp(conn)
 				if resp == 0 {
@@ -244,6 +305,15 @@ func modifyvm(conn net.Conn) {
 				fmt.Print("Please enter the CPUs that should be added to the VM")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
+				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
+				fmt.Print("Choice >> ")
+				fmt.Scan(&choice)
+				if choice == "y" {
+					fmt.Print()
+				} else {
+					fmt.Println("Alright, taking you back to main menu")
+					menu(conn)
+				}
 				send(conn, sender)
 				resp := getresp(conn)
 				if resp == 0 {
@@ -260,6 +330,15 @@ func modifyvm(conn net.Conn) {
 				fmt.Print("Please enter the CPUs that should be removed from the VM")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
+				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
+				fmt.Print("Choice >> ")
+				fmt.Scan(&choice)
+				if choice == "y" {
+					fmt.Print()
+				} else {
+					fmt.Println("Alright, taking you back to main menu")
+					menu(conn)
+				}
 				send(conn, sender)
 				resp := getresp(conn)
 				if resp == 0 {
@@ -274,17 +353,17 @@ func modifyvm(conn net.Conn) {
 				}
 
 			} else {
-				fmt.Println("Undefined option selected")
+				fmt.Println("Undefined option selected, taking back you to main menu")
 				menu(conn)
 			}
 
 		} else {
-			fmt.Println("Please select a proper option.")
+			fmt.Println("Undefined option selected, taking back you to main menu.")
 			menu(conn)
 		}
 
 	} else {
-		fmt.Println("Please choose a proper option.")
+		fmt.Println("Undefined option selected, taking back you to main menu.")
 		menu(conn)
 	}
 }
@@ -292,6 +371,7 @@ func modifyvm(conn net.Conn) {
 func createvm(conn net.Conn) {
 	var vmname string
 	var vmtag string
+	var choice string
 	var image int
 	var winchoice int
 	funcname := "createVM"
@@ -322,6 +402,16 @@ func createvm(conn net.Conn) {
 
 	}
 	sender := padint(0) + padint(len(funcname)) + funcname + padint(len(vmname)) + vmname + padint(len(vmtag)) + vmtag + padint(image)
+	fmt.Println("Are you sure you want to use $150 from your free subscription to spawn a VM with the selected options? [y/n]")
+	fmt.Print("Choice >> ")
+	fmt.Scan(&choice)
+	if choice == "y" {
+		fmt.Print()
+	} else {
+		fmt.Println("Alright, taking you back to main menu")
+		menu(conn)
+	}
+
 	send(conn, sender)
 	resp := getresp(conn)
 	if resp == 0 {
@@ -367,10 +457,14 @@ func register(conn net.Conn) {
 		print("Registration Successful")
 	} else if resp == 1 {
 		fmt.Println("Email Already Taken")
-		_exit(conn)
+		send(conn, "-337")
+		conn.Close()
+		os.Exit(0)
 	} else if resp == 2 {
 		fmt.Println("Password is not greater than 12 :/")
-		_exit(conn)
+		send(conn, "-337")
+		conn.Close()
+		os.Exit(0)
 	} else {
 		print("Something Went Wrong")
 		_exit(conn)
@@ -395,10 +489,14 @@ func login(conn net.Conn) {
 		menu(conn)
 	} else if resp == 1 {
 		fmt.Println("User Not Found")
-		_exit(conn)
+		send(conn, "-337")
+		conn.Close()
+		os.Exit(0)
 	} else if resp == 2 {
 		fmt.Println("Password Incorrect")
-		_exit(conn)
+		send(conn, "-337")
+		conn.Close()
+		os.Exit(0)
 	} else {
 		print("Something Went Wrong")
 		_exit(conn)
