@@ -164,11 +164,11 @@ class VM:
         vms = []
         for account in listdir(self.region):
             for tag in listdir(path.join(self.region, account)):
-                vms.append(self.statusofVM(account=account, tag=tag))
-                vms.sort(key=lambda x: path.getatime(path.join(account, x)))
+                vms.append((self.statusofVM(account=account, tag=tag), tag))
+                vms.sort(key=lambda x: path.getatime(path.join(self.region, account, x[1])))
                 if(len(vms) > self.statuscount):
                     vms = vms[:self.statuscount]
-        return '\n'.join(vms)
+        return '\n'.join(list(map(lambda vm: vm[0], vms)))
 
 class accounts:
     def __init__(self):

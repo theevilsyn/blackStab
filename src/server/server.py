@@ -157,7 +157,7 @@ def client_thread(conn, addr):
                     _send(conn, message)
             else:
                 logger.warn("Unexpected function call from {} : {}".format(addr[0], action))
-                conn.send(b'FUCK') # no proper function is called; client prints something went wrong
+                conn.send(unhexlify(b'4655434b'))
 
 
 HOST = ''
