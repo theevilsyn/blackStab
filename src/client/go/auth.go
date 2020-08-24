@@ -32,7 +32,8 @@ func auth(conn net.Conn) {
 	}
 
 	c := new(big.Int).SetBytes(cipherText)
-	plainText := base64.StdEncoding.EncodeToString(c.Exp(c, privateKey.D, privateKey.N).Bytes())
+	dec := c.Exp(c, privateKey.D, privateKey.N).Bytes()
+	plainText := base64.StdEncoding.EncodeToString(dec[len(dec)-128:])
 	sender := padint(len(plainText))
 	sender += plainText
 	send(conn, sender)

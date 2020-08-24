@@ -85,7 +85,7 @@ def authenticate(conn):
     finalchall = b64encode(challengect).decode()
     _send(conn, finalchall)
     resp = b64decode(_recv(conn))
-    if challengept == resp[-128:]:
+    if challengept == resp:
         print("Authenticated")
         return True
     else:

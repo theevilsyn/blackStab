@@ -55,7 +55,7 @@ func main() {
 	// connect to this socket
 	conn, err := net.Dial("tcp", "192.168.123.219:9999")
 	if err != nil {
-		// fmt.Println(err.Error())
+		fmt.Println(err.Error())
 		if strings.Contains(err.Error(), "refused") {
 			fmt.Println("Host not up")
 			os.Exit(1)
