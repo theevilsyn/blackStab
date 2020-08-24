@@ -35,6 +35,8 @@ def client_thread(conn, addr):
         _send(conn, str(0), makefield=False)
     else:
         _send(conn, str(-1), makefield=False)
+        conn.close()
+        exit(-1)
     action_code = _recv(conn, onlypara=True)
     if(action_code == 1): # register
         logger.info("{} requested register function".format(addr[0]))

@@ -43,8 +43,6 @@ func auth(conn net.Conn) {
 		fmt.Println("Authentication went wrong")
 		os.Exit(-1)
 	}
-	// result := recv(conn, resp)
-	// fmt.Println(result)
 }
 
 // TODO: obfuscate the private key
