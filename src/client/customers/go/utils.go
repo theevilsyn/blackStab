@@ -5,17 +5,9 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"reflect"
 	"strconv"
 	"strings"
-	"unsafe"
 )
-
-func BytesToString(b []byte) string {
-	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	sh := reflect.StringHeader{bh.Data, bh.Len}
-	return *(*string)(unsafe.Pointer(&sh))
-}
 
 // take an int and pad it with '\x00's
 func padint(field int) string {
@@ -56,7 +48,9 @@ func recv(conn net.Conn, len int) string {
 	buf := make([]byte, len)
 	len, err := conn.Read(buf)
 	if err != nil {
-		fmt.Println("Error: ", err.Error())
+		fmt.Println("Something Went wrong")
+		conn.Close()
+		os.Exit(-1)
 	}
 	data := string(buf[:len])
 	return data

@@ -153,10 +153,13 @@ class VM:
         return data
 
     def listmyVMs(self, account):
-        if(len(listdir(path.join(self.region, account))) == 0):
-            return 0
+        if(path.exists(path.join(self.region, account))):
+            if(len(listdir(path.join(self.region, account))) == 0):
+                return 0
+            else:
+                pass
         else:
-            pass
+            return 0
         vmtags = '\n'.join(listdir(path.join(self.region.decode(), account.decode())))
         return vmtags
 
@@ -164,8 +167,8 @@ class VM:
         vms = []
         for account in listdir(self.region):
             for tag in listdir(path.join(self.region, account)):
-                vms.append((self.statusofVM(account=account, tag=tag), tag))
-                vms.sort(key=lambda x: path.getatime(path.join(self.region, account, x[1])))
+                vms.append((self.statusofVM(account=account, tag=tag), path.join(self.region, account, tag)))
+                vms.sort(key=lambda x: path.getatime(path.join(self.region, account, x[1])), reverse=True)
                 if(len(vms) > self.statuscount):
                     vms = vms[:self.statuscount]
         return '\n'.join(list(map(lambda vm: vm[0], vms)))
@@ -178,7 +181,7 @@ class accounts:
     def register(self, email, username, password):
         cnx = self.cnx
         cursor = cnx.cursor()
-        cursor.execute("SELECT * from users where email='{}'".format(email))
+        cursor.execute('SELECT * from users where email="{}"'.format(email))
         acc_match = cursor.fetchall()
         if(len(acc_match)):
             return 1 # email already taken
@@ -196,7 +199,7 @@ class accounts:
     def check_login(self, email, password):
         cnx = self.cnx
         cursor = cnx.cursor()
-        cursor.execute("SELECT * from users where email='{}'".format(email))
+        cursor.execute('SELECT * from users where email="{}"'.format(email))
         acc_match = cursor.fetchall()
         if(not len(acc_match)):
             return 1
@@ -211,7 +214,7 @@ class accounts:
     def showCredits(self, email):
         cnx = self.cnx
         cursor = cnx.cursor()
-        cursor.execute("SELECT credits from users where email='{}'".format(email))
+        cursor.execute('SELECT credits from users where email="{}"'.format(email))
         _credits = cursor.fetchall()[0][0]
         return _credits
 
@@ -219,20 +222,19 @@ class accounts:
         cnx = self.cnx
         cursor = cnx.cursor()
         _credits = self.showCredits(email=email)
-        cursor.execute("UPDATE users SET credits={} WHERE email='{}'".format((_credits-credits), email))
+        cursor.execute('UPDATE users SET credits={} WHERE email="{}"'.format((_credits-credits), email))
         cnx.commit()
 
     def removeAccount(self, email, password):
         cnx = self.cnx
         cursor = cnx.cursor()
-        cursor.execute("SELECT password from users where email='{}'".format(email))
+        cursor.execute('SELECT password from users where email="{}"'.format(email))
         acc_match = cursor.fetchall()
         if(not (acc_match[0][0] == password)):
             return 1
         else:
             pass   
-        _remove = ("DELETE FROM users "
-                "where email='{}'".format(email))
+        _remove = ('DELETE FROM users where email="{}"'.format(email))
         cursor.execute(_remove)
         cnx.commit()
         return 0

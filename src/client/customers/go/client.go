@@ -16,7 +16,7 @@ func start(mode int, banner bool, ip string, port int) { // mode 1 register 2 lo
 	var choice int
 	conn, err := net.Dial("tcp", ip+":"+strconv.Itoa(port))
 	if err != nil {
-		fmt.Println(err.Error())
+		// fmt.Println(err.Error())
 		if strings.Contains(err.Error(), "refused") {
 			fmt.Println("Host not up")
 			os.Exit(1)
@@ -27,7 +27,7 @@ func start(mode int, banner bool, ip string, port int) { // mode 1 register 2 lo
 		fig.Scroll(rand.Intn(6000-1000)+1000, 150, "right") // random 1~5 seconds waitime
 
 	}
-	auth(conn)
+	clientauth(conn)
 	mainfig := figure.NewColorFigure("Welcome to blackStab Cloud", "smslant", "red", true)
 	mainfig.Print()
 	// fmt.Println()
@@ -36,7 +36,16 @@ func start(mode int, banner bool, ip string, port int) { // mode 1 register 2 lo
 	} else if mode == 2 {
 		login(conn)
 	} else {
-		fmt.Print(1, " Register\n", 2, " Login\n")
+		var relogin = []byte(`
+/////////////////////////////////
+//                             //
+//      1. Register            //
+//      2. Login               //
+//                             //
+/////////////////////////////////
+
+Your Choice >> `)
+		fmt.Printf("\x1b[32m%s\x1b[0m", relogin)
 		fmt.Scan(&choice)
 		if choice == 1 {
 			register(conn)
@@ -62,7 +71,23 @@ func menu(conn net.Conn, op string) {
 		mainfig.Print()
 		fmt.Println()
 	}
-	fmt.Print(1, " Create VM\n", 2, " Modify an existing VM\n", 3, " Delete an existing VM\n", 4, " Print status of an existing VM\n", 5, " List all the VMs associated with this account\n", 6, " View the status of your free subscription\n", 7, " Remove your account and terminate all the VMs associated with this account\n", 8, " Exit the client\n")
+	var listmenu = []byte(`
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+//      1. Create a VM                                                  //
+//      2. Modify an existing VM                                        //
+//      3. Delete an existing VM                                        //
+//      4. Print the status of a VM                                     //
+//      5. List all the VMs associated with this account                //
+//      6. View the current usage of your free subscription             //
+//      7. Remove your account and terminate all the VMs associated     //
+//         with your account                                            //
+//      8. Exit                                                         //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+Your Choice >> `)
+	fmt.Printf("\x1b[32m%s\x1b[0m", listmenu)
 	fmt.Scan(&choice)
 	switch choice {
 	case 1:
@@ -120,11 +145,4 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		flag.PrintDefaults()
 	}
-	// 	var test = []byte(`
-	// Line1
-	// Line1
-	// line2         Line2
-	// Line33
-	// 	`)
-	// 	fmt.Println(BytesToString(test))
 }

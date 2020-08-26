@@ -12,8 +12,8 @@ func deleteacc(conn net.Conn) {
 	var choice string
 	var password string
 	sender := padint(0)
-	sender += padint(len("deleteAccount"))
-	sender += "deleteAccount"
+	sender += padint(len("'deleteAccount'"))
+	sender += "'deleteAccount'"
 	fmt.Print("For security reasons, please enter your password: ")
 	fmt.Scan(&password)
 	fmt.Println("Are you sure you want to delete your account? [y/n]")
@@ -41,8 +41,8 @@ func deleteacc(conn net.Conn) {
 
 func viewsubscription(conn net.Conn) {
 	sender := padint(0)
-	sender += padint(len("viewSubscription"))
-	sender += "viewSubscription"
+	sender += padint(len("'viewSubscription'"))
+	sender += "'viewSubscription'"
 	send(conn, sender)
 	credits := getresp(conn)
 	fmt.Println()
@@ -51,8 +51,8 @@ func viewsubscription(conn net.Conn) {
 
 func listmyvms(conn net.Conn) {
 	sender := padint(0)
-	sender += padint(len("listallmyVMs"))
-	sender += "listallmyVMs"
+	sender += padint(len("'listallmyVMs'"))
+	sender += "'listallmyVMs'"
 	send(conn, sender)
 	count := getresp(conn)
 	if count == 0 {
@@ -69,8 +69,8 @@ func listmyvms(conn net.Conn) {
 func vmstatus(conn net.Conn) {
 	var vmtag string
 	sender := padint(0)
-	sender += padint(len("statusofmyVM"))
-	sender += "statusofmyVM"
+	sender += padint(len("'statusofmyVM'"))
+	sender += "'statusofmyVM'"
 	fmt.Print("Enter VM Tag")
 	fmt.Scan(&vmtag)
 	sender += padint(len(vmtag))
@@ -86,8 +86,8 @@ func deletevm(conn net.Conn) {
 	var vmtag string
 	var choice string
 	sender := padint(0)
-	sender += padint(len("deleteVM"))
-	sender += "deleteVM"
+	sender += padint(len("'deleteVM'"))
+	sender += "'deleteVM'"
 	fmt.Print("Enter VM Tag: ")
 	fmt.Scan(&vmtag)
 	fmt.Println("Are you sure you want to delete the VM? [y/n]")
@@ -126,14 +126,32 @@ func modifyvm(conn net.Conn) {
 	sender := padint(0)
 	fmt.Print("Enter the VM tag: ")
 	fmt.Scan(&vmtag)
-	fmt.Print("1. Edit Firewall Rules\n2. Scale an existing VM\n")
+	var modifymenu = []byte(`
+///////////////////////////////////////////////
+//                                           //
+//      1. Edit firewall rules of a VM       //
+//      2. Upscale/Downscale a VM            //
+//                                           //
+///////////////////////////////////////////////
+
+Your Choice >> `)
+	fmt.Printf("\x1b[32m%s\x1b[0m", modifymenu)
 	fmt.Scan(&modify)
 	if modify == 1 {
-		fmt.Print("1. Open/Close a TCP Port\n2. Open/Close a UDP Port\n")
+		var firewallmenu = []byte(`
+//////////////////////////////////////////
+//                                      //
+//      1. Open/Close a TCP Port        //
+//      2. Open/Close a UDP Port        //
+//                                      //
+//////////////////////////////////////////
+
+Your Choice >> `)
+		fmt.Printf("\x1b[32m%s\x1b[0m", firewallmenu)
 		fmt.Scan(&proto)
 		if proto == 1 {
-			sender += padint(len("ruleAddTCP"))
-			sender += "ruleAddTCP"
+			sender += padint(len("'ruleAddTCP'"))
+			sender += "'ruleAddTCP'"
 			sender += padint(len(vmtag))
 			sender += vmtag
 			fmt.Print("Enter the port: ")
@@ -143,7 +161,22 @@ func modifyvm(conn net.Conn) {
 				menu(conn, "Please select a proper port next time. No scope for overflow here :P")
 			}
 			sender += padint(port)
-			fmt.Print("1. Open TCP Port ", port, "\n2. Close TCP Port ", port, "\n")
+			// fmt.Println("")
+			var tcpmenuport = []byte(`
+//////////////////////////////////////////
+//                                      //
+//  Selected Port: `)
+			fmt.Printf("\x1b[32m%s\x1b[0m", tcpmenuport)
+			fmt.Print(fmt.Sprintf("%-21v//", port))
+			var tcpmenu = []byte(`
+//  Protocol: TCP                       //
+//          1. Open the Port            //
+//          2. Close the Port           //
+//                                      //
+//////////////////////////////////////////
+				
+Your Choice >> `)
+			fmt.Printf("\x1b[32m%s\x1b[0m", tcpmenu)
 			fmt.Scan(&operation)
 			if operation == 1 {
 				action = "opened"
@@ -179,18 +212,32 @@ func modifyvm(conn net.Conn) {
 				_exit(conn)
 			}
 		} else if proto == 2 {
-			sender += padint(len("ruleAddUDP"))
-			sender += "ruleAddUDP"
+			sender += padint(len("'ruleAddUDP'"))
+			sender += "'ruleAddUDP'"
 			sender += padint(len(vmtag))
 			sender += vmtag
 			fmt.Print("Enter the port: ")
 			fmt.Scan(&port)
 			if port > 65535 {
 				fmt.Println()
-				menu(conn, "Please select a proper port next time. No scope for overflow here :P")
+				menu(conn, "Please select a valid port.")
 			}
 			sender += padint(port)
-			fmt.Print("1. Open UDP Port ", port, "\n2. Close UDP Port ", port, "\n")
+			var udpmenuport = []byte(`
+//////////////////////////////////////////
+//                                      //
+//  Selected Port: `)
+			fmt.Printf("\x1b[32m%s\x1b[0m", udpmenuport)
+			fmt.Print(fmt.Sprintf("%-21v//", port))
+			var udpmenu = []byte(`
+//  Protocol: UDP                       //
+//          1. Open the Port            //
+//          2. Close the Port           //
+//                                      //
+//////////////////////////////////////////
+				
+Your Choice >> `)
+			fmt.Printf("\x1b[32m%s\x1b[0m", udpmenu)
 			fmt.Scan(&operation)
 			if operation == 1 {
 				action = "opened"
@@ -231,18 +278,36 @@ func modifyvm(conn net.Conn) {
 			menu(conn, "Please select a proper option next time")
 		}
 	} else if modify == 2 {
-		fmt.Print("1. Add/Remove RAM\n2. Upscale/Downscale CPU\n")
+		var resourcemenu = []byte(`
+//////////////////////////////////////////
+//                                      //
+//      1. Add/Remove RAM               //
+//      2. Upscale/Downscale CPU        //
+//                                      //
+//////////////////////////////////////////
+
+Your Choice >> `)
+		fmt.Printf("\x1b[32m%s\x1b[0m", resourcemenu)
 		fmt.Scan(&resource)
 		if resource == 1 {
-			sender += padint(len("scaleMemory"))
-			sender += "scaleMemory"
+			sender += padint(len("'scaleMemory'"))
+			sender += "'scaleMemory'"
 			sender += padint(len(vmtag))
 			sender += vmtag
-			fmt.Print("1. Add RAM\n2. Remove RAM")
+			var rammenu = []byte(`
+/////////////////////////////////
+//                             //
+//      1. Add RAM             //
+//      2. Remove RAM          //
+//                             //
+/////////////////////////////////
+
+Your Choice >> `)
+			fmt.Printf("\x1b[32m%s\x1b[0m", rammenu)
 			fmt.Scan(&operation)
 			sender += padint(operation)
 			if operation == 1 {
-				fmt.Print("Please enter the amount of RAM that should be added to the VM")
+				fmt.Print("Please enter the amount of RAM that should be added to the VM >> ")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
 				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
@@ -296,13 +361,22 @@ func modifyvm(conn net.Conn) {
 				menu(conn, "Undefined option selected")
 			}
 		} else if resource == 2 {
-			sender += padint(len("scaleCPU"))
-			sender += "scaleCPU"
-			fmt.Print("1. Add CPUs to an existing VM\n2. Remove CPUs from an existing VM")
+			sender += padint(len("'scaleCPU'"))
+			sender += "'scaleCPU'"
+			var cpumenu = []byte(`
+/////////////////////////////////////
+//                                 //
+//      1. Upscale CPU             //
+//      2. Downscale CPU           //
+//                                 //
+/////////////////////////////////////
+
+Your Choice >> `)
+			fmt.Printf("\x1b[32m%s\x1b[0m", cpumenu)
 			fmt.Scan(&operation)
 			sender += padint(operation)
 			if operation == 1 {
-				fmt.Print("Please enter the CPUs that should be added to the VM")
+				fmt.Print("Please enter the CPUs that should be added to the VM >> ")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
 				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
@@ -374,24 +448,49 @@ func createvm(conn net.Conn) {
 	var choice string
 	var image int
 	var winchoice int
-	funcname := "createVM"
+	funcname := "'createVM'"
 	fmt.Print("Enter Vm Name: ")
 	fmt.Scan(&vmname)
 	fmt.Print("Enter VM Tag: ")
 	fmt.Scan(&vmtag)
-	fmt.Print("Please Select the Operating System for your VM\n\tAvailable Options:\n\t\t0: Archlinux\n\t\t1: Ubuntu 16.04\n\t\t2: Ubuntu 18.04\n\t\t3: CentOS 7\n\t\t4: Oracle Linux 6\n\t\t5: OpenSUSE by SUSE\n\t\t6: Windows Server 2019 LTSC\n")
+	var osmenu = []byte(`
+///////////////////////////////////////////////////////
+//                                                   //
+//  Please Select the Operating System for your VM   //
+//  Available Options:                               //
+//          0. Archlinux                             //
+//          1. Ubuntu 16.04                          //
+//          2. Ubuntu 18.04                          //
+//          3. CentOS 7                              //
+//          4. Oracle Linux 6                        //
+//          5. OpenSUSE by SUSE                      //
+//          6. Windows Server 2019 LTSC              //
+//                                                   //
+///////////////////////////////////////////////////////
+
+Your Choice >> `)
+	fmt.Printf("\x1b[32m%s\x1b[0m", osmenu)
 	fmt.Scan(&image)
 	if image > 6 {
 		fmt.Println()
 		menu(conn, "Please select a valid operating system next time")
 	} else if image == 6 {
-		fmt.Println("This is to inform you that you are about to waste $150 cloud credits on --windows VM-- ")
-		fmt.Print("\n\t1. Continue\n\t2. Use your mind.\n")
+		fmt.Println("This is to inform you that you are about to waste $150 cloud credits on Windows Machine ")
+		var windowschoice = []byte(`
+////////////////////////////////////////////////
+//                                            //
+//      1. Continue                           //
+//      2. Use 0.0001% of your brain          //
+//                                            //
+////////////////////////////////////////////////
+
+Your Choice >> `)
+		fmt.Printf("\x1b[31m%s\x1b[0m", windowschoice)
 		fmt.Scan(&winchoice)
 		switch winchoice {
 
 		case 1:
-			fmt.Println("Mehh, alright ¯\\_(ツ)_/¯")
+			fmt.Println("Mehh!! alright ¯\\_(ツ)_/¯ ")
 		case 2:
 			fmt.Println()
 			menu(conn, "Good Choice!! You just saved 150$ just by using your mind!! f4lc0n appreciates you :P")
@@ -417,8 +516,8 @@ func createvm(conn net.Conn) {
 	if resp == 0 {
 		fmt.Println("Successfully created the VM print image, config and say you canyou can scale the vm")
 		details := padint(0)
-		details += padint(len("statusofmyVM"))
-		details += "statusofmyVM"
+		details += padint(len("'statusofmyVM'"))
+		details += "'statusofmyVM'"
 		details += padint(len(vmtag))
 		details += vmtag
 		send(conn, details)
@@ -442,28 +541,43 @@ func register(conn net.Conn) {
 	var email string
 	var username string
 	var password string
-	fmt.Print("Enter Email: ")
+	fmt.Print("\nEnter Email: ")
 	fmt.Scan(&email)
 	fmt.Print("Enter Username: ")
 	fmt.Scan(&username)
 	fmt.Print("Enter Password: ")
 	fmt.Scan(&password)
-	if len(email) > 90 {
+	if len(email) > 100 {
 		fmt.Println("Sorry, email can't be greater than 100 characters")
 		os.Exit(0)
-	} else if len(username) > 90 {
+	} else if len(username) > 100 {
 		fmt.Println("Sorry, username can't be greater than 100 characters")
 		os.Exit(0)
-	} else {
+	} else if len(password) > 100 {
 		fmt.Println("Sorry, password can't be greater than 100 characters")
 		os.Exit(0)
 	}
+	if strings.Contains(email, "\"") {
+		fmt.Println("Email should not contain the character '\"'")
+		os.Exit(0)
+	} else if strings.Contains(email, ";") {
+		fmt.Println("Email should not contain the character \";\"")
+		os.Exit(0)
+	} else if strings.Contains(email, "\\x") {
+		fmt.Println("Email should not contain \"\\x\"")
+		os.Exit(0)
+	}
 
+	if strings.Contains(email, "@blackstab.com") {
+		fmt.Println("We're sorry, this application is only for blackStab customers. Send us over your resume and become a blackStab employee to get your custom email with the domain blackstab.com")
+		os.Exit(0)
+	}
+	email = "'" + email + "'"
 	sender := padint(1) + padint(len(email)) + email + padint(len(username)) + username + padint(len(password)) + password
 	send(conn, sender)
 	resp := getresp(conn)
 	if resp == 0 {
-		print("Registration Successful")
+		fmt.Println("Registration Successful")
 	} else if resp == 1 {
 		fmt.Println("Email Already Taken")
 		send(conn, "-337")
@@ -475,7 +589,7 @@ func register(conn net.Conn) {
 		conn.Close()
 		os.Exit(0)
 	} else {
-		print("Something Went Wrong")
+		println("Something Went Wrong")
 		_exit(conn)
 	}
 }
@@ -483,15 +597,16 @@ func register(conn net.Conn) {
 func login(conn net.Conn) {
 	var email string
 	var password string
-	fmt.Print("Enter Email: ")
+	fmt.Print("\nEnter Email: ")
 	fmt.Scan(&email)
 	fmt.Print("Enter Password: ")
 	fmt.Scan(&password)
+	email = "'" + email + "'"
 	sender := padint(2) + padint(len(email)) + email + padint(len(password)) + password
 	send(conn, sender)
 	resp, err := strconv.Atoi(strings.ReplaceAll(recv(conn, 8), "\x00", ""))
 	if err != nil {
-		fmt.Println("Error: ", err.Error())
+		// fmt.Println("Error: ", err.Error())
 	}
 	if resp == 0 {
 		fmt.Println("Successfully Logged In")
@@ -507,7 +622,7 @@ func login(conn net.Conn) {
 		conn.Close()
 		os.Exit(0)
 	} else {
-		print("Something Went Wrong")
+		println("Something Went Wrong")
 		_exit(conn)
 	}
 
