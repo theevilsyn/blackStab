@@ -68,7 +68,7 @@ def client_thread(conn, addr):
                 vmname = _recv(conn)
                 vmtag = _recv(conn)
                 imageid = _recv(conn, onlypara=True)
-                balance = account.showCredits(email=email)
+                balance = account.showField(email=email)
                 resp = vm.createVM(funds=balance, account=hexlify(email.encode() + password.encode()), name=vmname, tag=vmtag.encode(), imageid=imageid)
                 _send(conn, str(resp), makefield=False)
                 if(resp == 0):
@@ -96,7 +96,7 @@ def client_thread(conn, addr):
                 tag = _recv(conn)
                 operation = _recv(conn, onlypara=True)
                 count = _recv(conn, onlypara=4)
-                _credits = account.showCredits(email=email)                
+                _credits = account.showField(email=email)                
                 response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, tag=tag.encode(), resource='ram', count=count, operation=operation)
                 _send(conn, str(response), makefield=False)
                 if(response == 0 and operation == 1):
@@ -107,7 +107,7 @@ def client_thread(conn, addr):
                 tag = _recv(conn)
                 operation = _recv(conn, onlypara=True)
                 count = _recv(conn, onlypara=True)
-                _credits = account.showCredits(email=email)                
+                _credits = account.showField(email=email)                
                 response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, tag=tag.encode(), resource='cpu', count=count, operation=operation)
                 _send(conn, str(response), makefield=False)                
                 if(response == 0 and operation == 1):
@@ -141,7 +141,7 @@ def client_thread(conn, addr):
 
             elif(cmp(action, 'viewSubscription')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                credits_left = account.showCredits(email=email)
+                credits_left = account.showField(email=email)
                 _send(conn, str(credits_left), makefield=False)
 
             elif(cmp(action, 'listallmyVMs')):

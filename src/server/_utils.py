@@ -48,7 +48,7 @@ def recvbytes(conn, remains):
             break
         buf += data
         remains -= len(data)
-    return (lambda buf: rep(r'[-;"#$%&(!)*+:;<>?/\\^_`{|}~]', r'', buf.decode()).encode())(buf)
+    return (lambda buf: rep(r'[-;"#$%&(!)*+:;<>?\\^_`{|}~]', r'', buf.decode()).encode())(buf)
 
 def register(conn, account, addr):
     email = _recv(conn)
@@ -106,10 +106,10 @@ def cmp(str1,str2):
     return True
 
 def isprivileged(conn, email):
-    key=_recv(conn)
-    if(key == "superhardadminpassword"):
+    key =_recv(conn)
+    if(key == "xQ1WIoRaT5D6HwP1rrIIrIlvNvUkjKP37oNz4aFGodI="):
         if("@blackstab.com" in email):
             return True
-        elif(cmp(repr(email), 'admin@blackstab.com')):
+        elif(cmp(email, 'admin@blackstab.com')):
             return True
-    return -1
+    return False

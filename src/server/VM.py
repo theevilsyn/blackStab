@@ -1,3 +1,4 @@
+from os import urandom as securegen
 from json import load
 from binascii import hexlify, unhexlify
 from shutil import rmtree
@@ -44,34 +45,47 @@ class VM:
     def createVM(self, funds, account, name, tag, imageid):
         if(not (funds > 100)):
             return 2
-        if(not path.exists(path.join(self.region, account))):
-            makedirs(path.join(self.region, account))
-        vm = VMStruct(name=name, tag=tag, image=self.images[imageid], tcpPorts=[22,80] , udpPorts=[53])
         if(not path.exists(path.join(self.region, account, tag))):
-            open(path.join(self.region, account, tag), 'w').write(hexlify(str(vm).encode()).decode())
+            makedirs(path.join(self.region, account, tag))
+        vm = VMStruct(name=name, tag=tag, image=self.images[imageid], tcpPorts=[22,80] , udpPorts=[53])
+        if(not path.exists(path.join(self.region, account, tag, tag))):
+            open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
         else:
             return 1
         return 0
     
+    def generateKey(self, account, tag, imageid): # ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2nJVVWsPotyvncpV9Kuy+EDSH8JAlArvMvmSsByh2A v4d3r@lightsaber
+        key = "ssh-ed25519 "
+        key += encode(securegen(64)).decode()
+        key += "blackStab@{}".format(tag.decode())
+        open(path.join(self.region, account, tag+b".key"),'w').write(key)
+
+    def getmykey(self, account, tag):
+        if(path.exists(path.join(self.region, account, tag))):
+            key=open(path.join(self.region, account, tag)).read()
+            return key
+        else:
+            tags = '\n'.join(list(filter(lambda x: ('.key' not in x), listdir(path.join(self.region, account, tag)))))
+            return "You don't have the VM with tag {}\nHere are the list of VMs for which you could get the key of: \n{}".format(tag, tags)
+
     def modifyFirewall(self, account, tag, proto, port, operation):
         if(not path.exists(path.join(self.region, account, tag))):
             return 2
         else:
             pass
-        
-        vm = eval(unhexlify(open(path.join(self.region, account, tag)).read()))
+        vm = eval(unhexlify(open(path.join(self.region, account, tag, tag)).read()))
         if(operation == 1):
             if(not (port in eval("vm.{}Ports".format(proto)))):
                 eval("vm.{}Ports".format(proto)).append(port)
                 eval("vm.{}Ports".format(proto)).sort()
-                open(path.join(self.region, account, tag), 'w').write(hexlify(str(vm).encode()).decode())
+                open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
                 return 0
             else:
                 return 1
         else:
             if(port in eval("vm.{}Ports".format(proto))):
                 eval("vm.{}Ports".format(proto)).remove(port)
-                open(path.join(self.region, account, tag), 'w').write(hexlify(str(vm).encode()).decode())
+                open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
                 return 0
             else:
                 return 1
@@ -94,7 +108,7 @@ class VM:
         else:
             pass
 
-        vm = eval(unhexlify(open(path.join(self.region, account, tag)).read()))
+        vm = eval(unhexlify(open(path.join(self.region, account, tag, tag)).read()))
         cost = prices[resource] * count
         if(operation == 1):
             if(cost > balance):
@@ -103,7 +117,7 @@ class VM:
                 pass
 
             exec("vm.{} += count".format(resource))
-            open(path.join(self.region, account, tag), 'w').write(hexlify(str(vm).encode()).decode())
+            open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
             return 0
 
         else:
@@ -112,14 +126,14 @@ class VM:
             else:
                 pass
             exec("vm.{} -= count".format(resource))
-            open(path.join(self.region, account, tag), 'w').write(hexlify(str(vm).encode()).decode())
+            open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
             return 0
 
     def deleteVM(self, account, tag):
         if(not path.exists(path.join(self.region, account, tag))):
             return 1
         else:
-            remove(path.join(path.join(self.region, account, tag)))
+            rmtree(path.join(path.join(self.region, account, tag)))
             return 0
 
     def removeAccount(self, account, challenge):
@@ -140,7 +154,7 @@ class VM:
         else:
             pass
 
-        vm = eval(unhexlify(open(path.join(self.region, account, tag)).read()))
+        vm = eval(unhexlify(open(path.join(self.region, account, tag, tag)).read()))
         data = """
         VM Name: {}
         VM Tag: {} // encoded for security reasons
