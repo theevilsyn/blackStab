@@ -83,7 +83,7 @@ def client_thread(conn, addr):
             elif(cmp(action, 'ruleAddTCP')):
                 logger.info("{} requested {} function".format(addr[0], action))
                 name = _recv(conn)
-                port = _recv(conn, _len=5, onlypara=True)
+                port = _recv(conn, onlypara=True)
                 operation = _recv(conn, onlypara=True)
                 response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), name=name.encode(), proto='tcp', port=port, operation=operation)
                 _send(conn, str(response), makefield=False)
@@ -91,7 +91,7 @@ def client_thread(conn, addr):
             elif(cmp(action, 'ruleAddUDP')):
                 logger.info("{} requested {} function".format(addr[0], action))
                 name = _recv(conn)
-                port = _recv(conn, _len=5, onlypara=True)
+                port = _recv(conn, onlypara=True)
                 operation = _recv(conn, onlypara=True)
                 response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), name=name.encode(), proto='udp', port=port, operation=operation)
                 _send(conn, str(response), makefield=False)

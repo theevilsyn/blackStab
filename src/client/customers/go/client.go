@@ -28,8 +28,11 @@ func start(mode int, banner bool, ip string, port int) { // mode 1 register 2 lo
 
 	}
 	clientauth(conn)
-	mainfig := figure.NewColorFigure("Welcome to blackStab Cloud", "smslant", "red", true)
-	mainfig.Print()
+	welcometo := figure.NewColorFigure("       Welcome to", "smslant", "red", true)
+	welcometo.Print()
+	blackstab := figure.NewColorFigure("blackStab  Cloud", "smslant", "red", true)
+	blackstab.Print()
+
 	// fmt.Println()
 	if mode == 1 {
 		register(conn)
@@ -60,32 +63,36 @@ func menu(conn net.Conn, op string) {
 	// clrscr()
 	if op != "" {
 		clrscr()
-		mainfig := figure.NewColorFigure("blackStab Cloud Services", "smslant", "red", true)
-		mainfig.Print()
+		mainfig1 := figure.NewColorFigure("      blackStab", "smslant", "red", true)
+		mainfig1.Print()
+		mainfig2 := figure.NewColorFigure("Cloud Services", "smslant", "red", true)
+		mainfig2.Print()
 		fmt.Println()
 		fmt.Println("Response:")
 		fmt.Print("\n" + op + "\n\n")
 	} else {
 		clrscr()
-		mainfig := figure.NewColorFigure("blackStab Cloud Services", "smslant", "red", true)
+		mainfig := figure.NewColorFigure("      blackStab", "smslant", "red", true)
 		mainfig.Print()
+		mainfig2 := figure.NewColorFigure("Cloud Services", "smslant", "red", true)
+		mainfig2.Print()
 		fmt.Println()
 	}
 	var listmenu = []byte(`
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-//      1. Create a VM                                                  //
-//      2. Modify an existing VM                                        //
-//      3. Delete one of your VMs                                       //
-//      4. Print the status of a VM                                     //
-//      5. List your public keys                                        //
-//      6. List all the VMs associated with this account                //
-//      7. View the current usage of your free subscription             //
-//      8. Remove your account and terminate all the VMs associated     //
-//         with your account                                            //
-//      9. Exit                                                         //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+//      1. Create a VM                                                   //
+//      2. Modify an existing VM                                         //
+//      3. Delete one of your VMs                                        //
+//      4. Print the status of a VM                                      //
+//      5. List your public keys                                         //
+//      6. List all the VMs associated with this account                 //
+//      7. View the current usage of your free subscription              //
+//      8. Remove your account and terminate all the VMs associated      //
+//         with your account                                             //
+//      9. Exit                                                          //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 Your Choice >> `)
 	fmt.Printf("\x1b[32m%s\x1b[0m", listmenu)

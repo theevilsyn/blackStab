@@ -135,7 +135,7 @@ func deletevm(conn net.Conn) {
 	resp := getresp(conn)
 	if resp == 0 {
 		fmt.Println()
-		menu(conn, "Successfully deleted the VM")
+		menu(conn, "Successfully deleted the VM "+vmname)
 	} else if resp == 1 {
 		fmt.Println()
 		menu(conn, "Action failed, the VM with requested name not found.")
@@ -235,7 +235,7 @@ Your Choice >> `)
 				menu(conn, "Successfully "+action+" the TCP Port "+strconv.Itoa(port))
 			} else if resp == 1 {
 				fmt.Println()
-				menu(conn, "TCP Port "+strconv.Itoa(port)+"already "+action)
+				menu(conn, "TCP Port "+strconv.Itoa(port)+" was already "+action)
 			} else if resp == 2 {
 				fmt.Println()
 				menu(conn, "VM with the requested name not found")
@@ -296,7 +296,7 @@ Your Choice >> `)
 				menu(conn, "Successfully "+action+" the UDP Port "+strconv.Itoa(port))
 			} else if resp == 1 {
 				fmt.Println()
-				menu(conn, "UDP Port "+strconv.Itoa(port)+"already "+action)
+				menu(conn, "UDP Port "+strconv.Itoa(port)+" was already "+action)
 			} else if resp == 2 {
 				fmt.Println()
 				menu(conn, "VM with the requested name not found")
@@ -315,6 +315,14 @@ Your Choice >> `)
 //                                      //
 //      1. Add/Remove RAM               //
 //      2. Upscale/Downscale CPU        //
+//                                      //
+//////////////////////////////////////////
+
+//////////////////////////////////////////
+//                                      //
+//    Price Model:                      //
+//	      1. 30$ for 1GB RAM each       //
+//	      2. 70$ for 1vCPU each         //
 //                                      //
 //////////////////////////////////////////
 
@@ -339,10 +347,10 @@ Your Choice >> `)
 			fmt.Scan(&operation)
 			sender += padint(operation)
 			if operation == 1 {
-				fmt.Print("Please enter the amount of RAM that should be added to the VM >> ")
+				fmt.Print("\n\nPlease enter the amount of RAM that should be added to the VM: ")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
-				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
+				fmt.Print("\n\nAre you sure you want to modify the VM's Shape by adding extra ", strconv.Itoa(quantity)+" RAM? [y/n]\n")
 				fmt.Print("Choice >> ")
 				fmt.Scan(&choice)
 				if choice == "y" {
@@ -361,13 +369,13 @@ Your Choice >> `)
 					menu(conn, "Action Failed, Insufficient Funds to complete the operation.")
 				} else if resp == 2 {
 					fmt.Println()
-					menu(conn, "Action Failed, VM with the requested name not found.")
+					menu(conn, "Action Failed, VM with the requested name does not exist.")
 				}
 			} else if operation == 2 {
-				fmt.Print("Please enter the amount of RAM that should be removed from the VM")
+				fmt.Print("\n\nPlease enter the amount of RAM that should be removed from the VM: ")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
-				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
+				fmt.Print("\n\nAre you sure you want to modify the VM's Shape by removing ", strconv.Itoa(quantity)+" RAM? [y/n]\n")
 				fmt.Print("Choice >> ")
 				fmt.Scan(&choice)
 				if choice == "y" {
@@ -386,7 +394,7 @@ Your Choice >> `)
 					menu(conn, "Action Failed, the requested quantity is greater than the current VM's RAM.")
 				} else if resp == 2 {
 					fmt.Println()
-					menu(conn, "Action Failed, VM with the requested name not found.")
+					menu(conn, "Action Failed, VM with the requested name does not exist.")
 				}
 			} else {
 				fmt.Println()
@@ -395,6 +403,8 @@ Your Choice >> `)
 		} else if resource == 2 {
 			sender += padint(len("'scaleCPU'"))
 			sender += "'scaleCPU'"
+			sender += padint(len(vmname))
+			sender += vmname
 			var cpumenu = []byte(`
 /////////////////////////////////////
 //                                 //
@@ -408,10 +418,10 @@ Your Choice >> `)
 			fmt.Scan(&operation)
 			sender += padint(operation)
 			if operation == 1 {
-				fmt.Print("Please enter the CPUs that should be added to the VM >> ")
+				fmt.Print("\n\nPlease enter the CPUs that should be added to the VM: ")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
-				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
+				fmt.Print("\n\nAre you sure you want to modify the VM's Shape by adding ", strconv.Itoa(quantity)+" CPUs? [y/n]\n")
 				fmt.Print("Choice >> ")
 				fmt.Scan(&choice)
 				if choice == "y" {
@@ -430,13 +440,13 @@ Your Choice >> `)
 					menu(conn, "Action Failed, Insufficient Funds to complete the operation.")
 				} else if resp == 2 {
 					fmt.Println()
-					menu(conn, "Action Failed, VM with the requested name not found.")
+					menu(conn, "Action Failed, VM with the requested name does not exist.")
 				}
 			} else if operation == 2 {
-				fmt.Print("Please enter the CPUs that should be removed from the VM")
+				fmt.Print("\n\nPlease enter the CPUs that should be removed from the VM: ")
 				fmt.Scan(&quantity)
 				sender += padint(quantity)
-				fmt.Println("Are you sure you want to modify the VM's Shape? [y/n]")
+				fmt.Print("\n\nAre you sure you want to modify the VM's Shape by adding ", strconv.Itoa(quantity)+" CPUs? [y/n]\n")
 				fmt.Print("Choice >> ")
 				fmt.Scan(&choice)
 				if choice == "y" {
@@ -455,7 +465,7 @@ Your Choice >> `)
 					menu(conn, "Action Failed, the requested quantity is greater than the current VM's CPU count.")
 				} else if resp == 2 {
 					fmt.Println()
-					menu(conn, "Action Failed, VM with the requested name not found.")
+					menu(conn, "Action Failed, VM with the requested name does not exist.")
 				}
 
 			} else {
@@ -538,17 +548,17 @@ Your Choice >> `)
 		}
 
 	}
-	fmt.Println("Please give your SSH public key to be added to the VM [please encode with base64]")
+	fmt.Print("\n\nPlease give your SSH public key to be added to the VM [please encode with base64]\n")
 	fmt.Print("Input >> ")
 	fmt.Scan(&sshkey)
 	if isBase64(sshkey) {
-		fmt.Print("Key accepted, what shall I name this? ")
+		fmt.Print("\n\nKey accepted, what shall I name this key? ")
 		fmt.Scan(&sshkeyname)
 	} else {
 		menu(conn, "Sorry, the key is not in a proper format. Please try again!!")
 	}
 	sender := padint(0) + padint(len(funcname)) + funcname + padint(len(vmname)) + vmname + padint(len(vmtag)) + vmtag + padint(image) + padint(len(sshkey)) + sshkey + padint(len(sshkeyname)) + sshkeyname
-	fmt.Println("Are you sure you want to use $150 from your free subscription to spawn a VM with the selected options? [y/n]")
+	fmt.Print("\n\nAre you sure you want to use $150 from your free subscription to spawn a VM with the selected options? [y/n]\n")
 	fmt.Print("Choice >> ")
 	fmt.Scan(&choice)
 	if choice == "y" {
@@ -569,7 +579,7 @@ Your Choice >> `)
 		send(conn, details)
 		resp := getresp(conn)
 		fmt.Println()
-		menu(conn, "Successfully spawned "+vmname+"\nHere are the details of the VM that has just been spawned\n"+recv(conn, resp)+"\nYou can always edit/scale your VM by using the Modify VM option in the main menu.")
+		menu(conn, "Successfully spawned "+vmname+"\nHere are the details of the VM that has been spawned now:\n"+recv(conn, resp)+"\nYou can always scale your VM or edit the firewall rules by using the Modify VM option in the main menu.")
 	} else if resp == 1 {
 		fmt.Println()
 		menu(conn, "VM with the name "+vmname+" is already present")
