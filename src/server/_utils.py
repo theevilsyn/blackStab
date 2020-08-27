@@ -54,8 +54,7 @@ def register(conn, account, addr):
     email = _recv(conn)
     username = _recv(conn)
     password = _recv(conn)
-    if("admin" in email):
-        authenticate(conn)
+    authenticate(conn, initial=False) if '@blackstab.com' in email else 'nothing'
     _register = account.register(email=email, username=username, password=password)
     _send(conn, str(_register), makefield=False)
     if( (_register == 1) or (_register == 2)):
@@ -73,7 +72,6 @@ def register(conn, account, addr):
 def login(conn, account, addr):
     email = _recv(conn)
     password = _recv(conn)
-    # authenticate(conn, initiate=False) if '@blackstab.com' in email or 'admin' in email else 'nothing'
     _login = account.check_login(email=email, password=password)
     _send(conn, str(_login), makefield=False)
     if( (_login == 1) or (_login == 2)):
@@ -85,8 +83,8 @@ def login(conn, account, addr):
         pass
     return email, password
 
-def authenticate(conn, initiate=True):
-    pubkey = b'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FR\nOEFNSUlCQ2dLQ0FRRUF5MksyVFZqY1NkcVhxWitpT3RBVQphbVFlWHBmaFdiZzFBVEZRNXhvR2Ez\ndlFMRXlEbjUyc2l2ZGNuWWU1KzdORFdkUjlVWFFISjY3SXlDcXY2SjhtCnpWM0JCRU9wYS9jOUZP\nS0xlelhxNXFpemRUaDBXWEFyNVZNNklWZk9YWnArNUptaEpROEdqemg4bmRsUENKMisKK3FONXpK\nbXVDb0Z6blFXMkdZOUVMNFUyQW9SYVR5cEErbFdJZnVCaURObG1lT0w1bDhQbGNLTGlFYUthcHZy\nZgpueXFOc0NrZmVwdFhjd284UmhSSWNobUVjaHBRTVZmYXBmMDFsQkZkZi9YTkxPU3dnS1NTNFQw\nV0lHUGxmelY1CjBCNXJJajF4UEo3bGI3UlpieGFueWZkRTcxRVV0UGhxdEhiaS9CQTVUeGQ2STFR\nWGhMVjRNSE5XaldoWjBnSzkKeFFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==\n' if initiate else b'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFzK0ZBVlRtaFJkakdyWXY1TjBtWgoyT1hzT3liZHRMMG0rT2Q1SUVqSi9lUjNETktGOVQ2d2FuQ0R2YlZzQVBiUVpkMEthSldOc0lmNlBGVm1TSUcwCmZPYnpYYmZaS2RldVVJQk1BVFg1ak9nenp6aGk4b1NvOXBmRnJ6bmM2NlJGVC9IOTNHWFJkWkt2aUM2RVJEL20KNmRXNlJZbEs1cW41OXU0SUZGcmFvSkQ0UFZGVGxmbjFwZTA3c2F4NjNmUkRiQnZxbGN1U0tpNlcwczFkdnJCMApaeWN3aXZ1UWNXSWE5QmU2MnVFcDF0Sm5Ta2duWFp4Q0hZS3ZLT2hDajV4a2xXMjFIanpVeE05L0VQdHZXMnkwCm5HdmxwZC8rWTRiT3I3NTNHVlIwN3FPdGo3eGpBZ1MwdkRsME9OZEd5Qmd3Tk5KRk9POFhwMWFhSWY1N3VGd2QKZVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg=='
+def authenticate(conn, initial=True):
+    pubkey = b'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FR\nOEFNSUlCQ2dLQ0FRRUF5MksyVFZqY1NkcVhxWitpT3RBVQphbVFlWHBmaFdiZzFBVEZRNXhvR2Ez\ndlFMRXlEbjUyc2l2ZGNuWWU1KzdORFdkUjlVWFFISjY3SXlDcXY2SjhtCnpWM0JCRU9wYS9jOUZP\nS0xlelhxNXFpemRUaDBXWEFyNVZNNklWZk9YWnArNUptaEpROEdqemg4bmRsUENKMisKK3FONXpK\nbXVDb0Z6blFXMkdZOUVMNFUyQW9SYVR5cEErbFdJZnVCaURObG1lT0w1bDhQbGNLTGlFYUthcHZy\nZgpueXFOc0NrZmVwdFhjd284UmhSSWNobUVjaHBRTVZmYXBmMDFsQkZkZi9YTkxPU3dnS1NTNFQw\nV0lHUGxmelY1CjBCNXJJajF4UEo3bGI3UlpieGFueWZkRTcxRVV0UGhxdEhiaS9CQTVUeGQ2STFR\nWGhMVjRNSE5XaldoWjBnSzkKeFFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==\n' if initial else b'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFzK0ZBVlRtaFJkakdyWXY1TjBtWgoyT1hzT3liZHRMMG0rT2Q1SUVqSi9lUjNETktGOVQ2d2FuQ0R2YlZzQVBiUVpkMEthSldOc0lmNlBGVm1TSUcwCmZPYnpYYmZaS2RldVVJQk1BVFg1ak9nenp6aGk4b1NvOXBmRnJ6bmM2NlJGVC9IOTNHWFJkWkt2aUM2RVJEL20KNmRXNlJZbEs1cW41OXU0SUZGcmFvSkQ0UFZGVGxmbjFwZTA3c2F4NjNmUkRiQnZxbGN1U0tpNlcwczFkdnJCMApaeWN3aXZ1UWNXSWE5QmU2MnVFcDF0Sm5Ta2duWFp4Q0hZS3ZLT2hDajV4a2xXMjFIanpVeE05L0VQdHZXMnkwCm5HdmxwZC8rWTRiT3I3NTNHVlIwN3FPdGo3eGpBZ1MwdkRsME9OZEd5Qmd3Tk5KRk9POFhwMWFhSWY1N3VGd2QKZVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg=='
     challengept = (''.join(choice(letters) for i in range(128))).encode()
     challengect = Cipher_PKCS1_v1_5.new(RSA.importKey(b64decode(pubkey))).encrypt(challengept)
     finalchall = b64encode(challengect).decode()
