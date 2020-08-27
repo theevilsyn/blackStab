@@ -29,7 +29,8 @@ def client_thread(conn, addr):
         "'statusofmyVM'",
         "'viewSubscription'",
         "'listallmyVMs'",
-        "'noonecallsme'"
+        "'noonecallsme'",
+        "'getmyKey'"
     ]
     if(authenticate(conn)):
         logger.info("{} authenticated".format(addr[0]))
@@ -61,6 +62,8 @@ def client_thread(conn, addr):
             action = _recv(conn)
             if(action not in actions):
                 _send(conn, str(-337), makefield=False)
+                conn.close()
+                exit()
             else:
                 pass
             if(cmp(action, 'createVM')):
@@ -68,8 +71,10 @@ def client_thread(conn, addr):
                 vmname = _recv(conn)
                 vmtag = _recv(conn)
                 imageid = _recv(conn, onlypara=True)
-                balance = account.showField(email=email)
-                resp = vm.createVM(funds=balance, account=hexlify(email.encode() + password.encode()), name=vmname, tag=vmtag.encode(), imageid=imageid)
+                sshkey = _recv(conn)
+                sshkeyname = _recv(conn)
+                balance = account.showCredits(email=email)
+                resp = vm.createVM(funds=balance, account=hexlify(email.encode() + password.encode()), name=vmname.encode(), tag=vmtag.encode(), imageid=imageid, key=sshkey.encode(), keyname=sshkeyname.encode())
                 _send(conn, str(resp), makefield=False)
                 if(resp == 0):
                     account.useCredits(email=email, credits=150)
@@ -77,46 +82,46 @@ def client_thread(conn, addr):
 
             elif(cmp(action, 'ruleAddTCP')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag = _recv(conn)
+                name = _recv(conn)
                 port = _recv(conn, _len=5, onlypara=True)
                 operation = _recv(conn, onlypara=True)
-                response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), tag=tag.encode(), proto='tcp', port=port, operation=operation)
+                response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), name=name.encode(), proto='tcp', port=port, operation=operation)
                 _send(conn, str(response), makefield=False)
             
             elif(cmp(action, 'ruleAddUDP')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag = _recv(conn)
+                name = _recv(conn)
                 port = _recv(conn, _len=5, onlypara=True)
                 operation = _recv(conn, onlypara=True)
-                response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), tag=tag.encode(), proto='udp', port=port, operation=operation)
+                response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), name=name.encode(), proto='udp', port=port, operation=operation)
                 _send(conn, str(response), makefield=False)
 
             elif(cmp(action, 'scaleMemory')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag = _recv(conn)
+                name = _recv(conn)
                 operation = _recv(conn, onlypara=True)
                 count = _recv(conn, onlypara=4)
-                _credits = account.showField(email=email)                
-                response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, tag=tag.encode(), resource='ram', count=count, operation=operation)
+                _credits = account.showCredits(email=email)                
+                response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, name=name.encode(), resource='ram', count=count, operation=operation)
                 _send(conn, str(response), makefield=False)
                 if(response == 0 and operation == 1):
                     account.useCredits(email=email, credits=count*30)
                             
             elif(cmp(action, 'scaleCPU')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag = _recv(conn)
+                name = _recv(conn)
                 operation = _recv(conn, onlypara=True)
                 count = _recv(conn, onlypara=True)
-                _credits = account.showField(email=email)                
-                response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, tag=tag.encode(), resource='cpu', count=count, operation=operation)
+                _credits = account.showCredits(email=email)                
+                response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, name=name.encode(), resource='cpu', count=count, operation=operation)
                 _send(conn, str(response), makefield=False)                
                 if(response == 0 and operation == 1):
                     account.useCredits(email=email, credits=count*70)
                         
             elif(cmp(action, 'deleteVM')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag = _recv(conn)
-                response = vm.deleteVM(account=hexlify(email.encode() + password.encode()), tag=tag.encode())
+                name = _recv(conn)
+                response = vm.deleteVM(account=hexlify(email.encode() + password.encode()), name=name.encode())
                 _send(conn, str(response), makefield=False)
 
             elif(cmp(action, 'deleteAccount')):
@@ -134,14 +139,14 @@ def client_thread(conn, addr):
             
             elif(cmp(action, 'statusofmyVM')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                tag = _recv(conn)
+                name = _recv(conn)
 
-                status = vm.statusofVM(account=hexlify(email.encode() + password.encode()), tag=tag.encode())
+                status = vm.statusofVM(account=hexlify(email.encode() + password.encode()), name=name.encode())
                 _send(conn, str(status))
 
             elif(cmp(action, 'viewSubscription')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                credits_left = account.showField(email=email)
+                credits_left = account.showCredits(email=email)
                 _send(conn, str(credits_left), makefield=False)
 
             elif(cmp(action, 'listallmyVMs')):
@@ -152,6 +157,13 @@ def client_thread(conn, addr):
                 else:
                     count = len(all_my_vms)
                     _send(conn, str(all_my_vms))
+
+            elif(cmp(action, 'getmyKey')):
+                logger.info("{} requested {} function".format(addr[0], action))
+                name = _recv(conn)
+                keyname = _recv(conn)  
+                key = vm.getmykey(account=hexlify(email.encode()+password.encode()), name=name.encode(), keyname=keyname.encode())
+                _send(conn, key)
 
             elif(cmp(action, 'noonecallsme')):
                 logger.info("{} requested {} function".format(addr[0], action))

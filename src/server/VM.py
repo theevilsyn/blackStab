@@ -42,55 +42,59 @@ class VM:
 
         return
 
-    def createVM(self, funds, account, name, tag, imageid):
+    def createVM(self, funds, account, name, tag, imageid, key, keyname):
         if(not (funds > 100)):
             return 2
-        if(not path.exists(path.join(self.region, account, tag))):
-            makedirs(path.join(self.region, account, tag))
+        if(not path.exists(path.join(self.region, account, name))):
+            makedirs(path.join(self.region, account, name))
         vm = VMStruct(name=name, tag=tag, image=self.images[imageid], tcpPorts=[22,80] , udpPorts=[53])
-        if(not path.exists(path.join(self.region, account, tag, tag))):
-            open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
+        if(not path.exists(path.join(self.region, account, name, b"details"))):
+            open(path.join(self.region, account, name, b'details'), 'w').write(hexlify(str(vm).encode()).decode())
+            open(path.join(self.region, account, name, keyname + b".key"),'w').write(key.decode())
         else:
             return 1
         return 0
-    
-    def generateKey(self, account, tag, imageid): # ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2nJVVWsPotyvncpV9Kuy+EDSH8JAlArvMvmSsByh2A v4d3r@lightsaber
-        key = "ssh-ed25519 "
-        key += encode(securegen(64)).decode()
-        key += "blackStab@{}".format(tag.decode())
-        open(path.join(self.region, account, tag+b".key"),'w').write(key)
 
-    def getmykey(self, account, tag):
-        if(path.exists(path.join(self.region, account, tag))):
-            key=open(path.join(self.region, account, tag)).read()
+    def getmykey(self, account, name, keyname):
+        if(not path.exists(path.join(self.region, account))):
+            return "You have no VMs associated with this account"
+        elif(path.exists(path.join(self.region, account, name, keyname))):
+            key=open(path.join(self.region, account, name, keyname)).read()
             return key
+        elif(path.exists(path.join(self.region, account, name))):
+            keys = b'\n\t\t'.join(list(filter(lambda x: (b'.key' not in x), listdir(path.join(self.region, account, name)))))
+            keylist = """
+        You dont't have the key {} associated to the VM {}
+        Here is the list of keys associated with the VM:
+        {}
+        """.format(keyname.decode(), name.decode(), keys.decode().replace(".key", ""))
+            return keylist
         else:
-            tags = '\n'.join(list(filter(lambda x: ('.key' not in x), listdir(path.join(self.region, account, tag)))))
-            return "You don't have the VM with tag {}\nHere are the list of VMs for which you could get the key of: \n{}".format(tag, tags)
+            return "VM with the requested name not found"
 
-    def modifyFirewall(self, account, tag, proto, port, operation):
-        if(not path.exists(path.join(self.region, account, tag))):
+    def modifyFirewall(self, account, name, proto, port, operation):
+        if(not path.exists(path.join(self.region, account, name))):
             return 2
         else:
             pass
-        vm = eval(unhexlify(open(path.join(self.region, account, tag, tag)).read()))
+        vm = eval(unhexlify(open(path.join(self.region, account, name, b"details")).read()))
         if(operation == 1):
             if(not (port in eval("vm.{}Ports".format(proto)))):
                 eval("vm.{}Ports".format(proto)).append(port)
                 eval("vm.{}Ports".format(proto)).sort()
-                open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
+                open(path.join(self.region, account, name, b"details"), 'w').write(hexlify(str(vm).encode()).decode())
                 return 0
             else:
                 return 1
         else:
             if(port in eval("vm.{}Ports".format(proto))):
                 eval("vm.{}Ports".format(proto)).remove(port)
-                open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
+                open(path.join(self.region, account, name, b"details"), 'w').write(hexlify(str(vm).encode()).decode())
                 return 0
             else:
                 return 1
 
-    def modifyShape(self, account, balance, tag, resource, count, operation):
+    def modifyShape(self, account, balance, name, resource, count, operation):
         """
         1GB RAM = 30$
         1 CPU = 70$
@@ -103,12 +107,12 @@ class VM:
                 'cpu': 70,
         }
 
-        if(not path.exists(path.join(self.region, account, tag))):
+        if(not path.exists(path.join(self.region, account, name))):
             return 2
         else:
             pass
 
-        vm = eval(unhexlify(open(path.join(self.region, account, tag, tag)).read()))
+        vm = eval(unhexlify(open(path.join(self.region, account, name, b"details")).read()))
         cost = prices[resource] * count
         if(operation == 1):
             if(cost > balance):
@@ -117,7 +121,7 @@ class VM:
                 pass
 
             exec("vm.{} += count".format(resource))
-            open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
+            open(path.join(self.region, account, name, b"details"), 'w').write(hexlify(str(vm).encode()).decode())
             return 0
 
         else:
@@ -126,14 +130,14 @@ class VM:
             else:
                 pass
             exec("vm.{} -= count".format(resource))
-            open(path.join(self.region, account, tag, tag), 'w').write(hexlify(str(vm).encode()).decode())
+            open(path.join(self.region, account, name, b"details"), 'w').write(hexlify(str(vm).encode()).decode())
             return 0
 
-    def deleteVM(self, account, tag):
-        if(not path.exists(path.join(self.region, account, tag))):
+    def deleteVM(self, account, name):
+        if(not path.exists(path.join(self.region, account, name))):
             return 1
         else:
-            rmtree(path.join(path.join(self.region, account, tag)))
+            rmtree(path.join(path.join(self.region, account, name)))
             return 0
 
     def removeAccount(self, account, challenge):
@@ -147,23 +151,23 @@ class VM:
         else:
             return 1 # no VMs under the account
 
-    def statusofVM(self, account, tag): #the vulnerable function
-        if(not path.exists(path.join(self.region, account, tag))):
-            data = "The VM with the tag {} does not exist".format(tag.decode())
+    def statusofVM(self, account, name): #the vulnerable function
+        if(not path.exists(path.join(self.region, account, name))):
+            data = "The VM with the name {} does not exist".format(name.decode())
             return data
         else:
             pass
 
-        vm = eval(unhexlify(open(path.join(self.region, account, tag, tag)).read()))
+        vm = eval(unhexlify(open(path.join(self.region, account, name, b"details")).read()))
         data = """
         VM Name: {}
         VM Tag: {} // encoded for security reasons
         Operating System: {}
         Associated to Account: {}
-        TCP Ports Open: {}
         UDP Ports Open: {}
+        TCP Ports Open: {}
         Specifications: Number of CPUs are {} and the RAM is {} GB
-        """.format(vm.name, encode(vm.tag).decode(), vm.image,account.decode(), str(vm.tcpPorts), str(vm.udpPorts), str(vm.cpu), str(vm.ram))
+        """.format(vm.name.decode(), encode(vm.tag).decode(), vm.image,account.decode(), str(vm.udpPorts), str(vm.tcpPorts), str(vm.cpu), str(vm.ram))
         return data
 
     def listmyVMs(self, account):
@@ -174,14 +178,14 @@ class VM:
                 pass
         else:
             return 0
-        vmtags = '\n'.join(listdir(path.join(self.region.decode(), account.decode())))
-        return vmtags
+        vmnames = "\n\t" + '\n\t'.join(listdir(path.join(self.region.decode(), account.decode())))
+        return vmnames
 
     def masterlist(self): # latest VMs that are spawned
         vms = []
         for account in listdir(self.region):
-            for tag in listdir(path.join(self.region, account)):
-                vms.append((self.statusofVM(account=account, tag=tag), path.join(self.region, account, tag)))
+            for name in listdir(path.join(self.region, account)):
+                vms.append((self.statusofVM(account=account, name=name), path.join(self.region, account, name)))
                 vms.sort(key=lambda x: path.getatime(path.join(self.region, account, x[1])), reverse=True)
                 if(len(vms) > self.statuscount):
                     vms = vms[:self.statuscount]

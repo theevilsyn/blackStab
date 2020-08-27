@@ -49,6 +49,29 @@ func viewsubscription(conn net.Conn) {
 	menu(conn, "You have "+strconv.Itoa(credits)+"$ worth credits left in your free subscription")
 }
 
+func getmykey(conn net.Conn) {
+	var vmname string
+	var keyname string
+	sender := padint(0)
+	sender += padint(len("'getmyKey'"))
+	sender += "'getmyKey'"
+	fmt.Print("Enter VM name: ")
+	fmt.Scan(&vmname)
+	if !isAlphaNumeric(vmname) {
+		menu(conn, "VM name should only contain alphanumeric characters")
+	}
+	sender += padint(len(vmname))
+	sender += vmname
+	fmt.Print("Key name: ")
+	fmt.Scan(&keyname)
+	sender += padint(len(keyname))
+	sender += keyname
+	send(conn, sender)
+	keylen := getresp(conn)
+	key := recv(conn, keylen)
+	menu(conn, key)
+}
+
 func listmyvms(conn net.Conn) {
 	sender := padint(0)
 	sender += padint(len("'listallmyVMs'"))
@@ -67,14 +90,17 @@ func listmyvms(conn net.Conn) {
 }
 
 func vmstatus(conn net.Conn) {
-	var vmtag string
+	var vmname string
 	sender := padint(0)
 	sender += padint(len("'statusofmyVM'"))
 	sender += "'statusofmyVM'"
-	fmt.Print("Enter VM Tag")
-	fmt.Scan(&vmtag)
-	sender += padint(len(vmtag))
-	sender += vmtag
+	fmt.Print("Enter VM name: ")
+	fmt.Scan(&vmname)
+	if !isAlphaNumeric(vmname) {
+		menu(conn, "VM name should only contain alphanumeric characters")
+	}
+	sender += padint(len(vmname))
+	sender += vmname
 	send(conn, sender)
 	statuslen := getresp(conn)
 	status := recv(conn, statuslen)
@@ -83,13 +109,16 @@ func vmstatus(conn net.Conn) {
 }
 
 func deletevm(conn net.Conn) {
-	var vmtag string
+	var vmname string
 	var choice string
 	sender := padint(0)
 	sender += padint(len("'deleteVM'"))
 	sender += "'deleteVM'"
-	fmt.Print("Enter VM Tag: ")
-	fmt.Scan(&vmtag)
+	fmt.Print("Enter VM name: ")
+	fmt.Scan(&vmname)
+	if !isAlphaNumeric(vmname) {
+		menu(conn, "VM name should only contain alphanumeric characters")
+	}
 	fmt.Println("Are you sure you want to delete the VM? [y/n]")
 	fmt.Print("Choice >> ")
 	fmt.Scan(&choice)
@@ -100,8 +129,8 @@ func deletevm(conn net.Conn) {
 		menu(conn, "")
 	}
 
-	sender += padint(len(vmtag))
-	sender += vmtag
+	sender += padint(len(vmname))
+	sender += vmname
 	send(conn, sender)
 	resp := getresp(conn)
 	if resp == 0 {
@@ -109,7 +138,7 @@ func deletevm(conn net.Conn) {
 		menu(conn, "Successfully deleted the VM")
 	} else if resp == 1 {
 		fmt.Println()
-		menu(conn, "Action failed, the VM with requested tag not found.")
+		menu(conn, "Action failed, the VM with requested name not found.")
 	}
 }
 
@@ -121,11 +150,14 @@ func modifyvm(conn net.Conn) {
 	var quantity int
 	var resource int
 	var operation int // 0:1 -> open:close | 0:1 -> upscale:downscale
-	var vmtag string
+	var vmname string
 	var action string
 	sender := padint(0)
-	fmt.Print("Enter the VM tag: ")
-	fmt.Scan(&vmtag)
+	fmt.Print("Enter the VM name: ")
+	fmt.Scan(&vmname)
+	if !isAlphaNumeric(vmname) {
+		menu(conn, "VM name should only contain alphanumeric characters")
+	}
 	var modifymenu = []byte(`
 ///////////////////////////////////////////////
 //                                           //
@@ -152,8 +184,8 @@ Your Choice >> `)
 		if proto == 1 {
 			sender += padint(len("'ruleAddTCP'"))
 			sender += "'ruleAddTCP'"
-			sender += padint(len(vmtag))
-			sender += vmtag
+			sender += padint(len(vmname))
+			sender += vmname
 			fmt.Print("Enter the port: ")
 			fmt.Scan(&port)
 			if port > 65535 {
@@ -206,7 +238,7 @@ Your Choice >> `)
 				menu(conn, "TCP Port "+strconv.Itoa(port)+"already "+action)
 			} else if resp == 2 {
 				fmt.Println()
-				menu(conn, "VM with the requested tag not found")
+				menu(conn, "VM with the requested name not found")
 			} else {
 				fmt.Println("Something went wrong")
 				_exit(conn)
@@ -214,8 +246,8 @@ Your Choice >> `)
 		} else if proto == 2 {
 			sender += padint(len("'ruleAddUDP'"))
 			sender += "'ruleAddUDP'"
-			sender += padint(len(vmtag))
-			sender += vmtag
+			sender += padint(len(vmname))
+			sender += vmname
 			fmt.Print("Enter the port: ")
 			fmt.Scan(&port)
 			if port > 65535 {
@@ -267,7 +299,7 @@ Your Choice >> `)
 				menu(conn, "UDP Port "+strconv.Itoa(port)+"already "+action)
 			} else if resp == 2 {
 				fmt.Println()
-				menu(conn, "VM with the requested tag not found")
+				menu(conn, "VM with the requested name not found")
 			} else {
 				fmt.Println("Something went wrong")
 				_exit(conn)
@@ -292,8 +324,8 @@ Your Choice >> `)
 		if resource == 1 {
 			sender += padint(len("'scaleMemory'"))
 			sender += "'scaleMemory'"
-			sender += padint(len(vmtag))
-			sender += vmtag
+			sender += padint(len(vmname))
+			sender += vmname
 			var rammenu = []byte(`
 /////////////////////////////////
 //                             //
@@ -329,7 +361,7 @@ Your Choice >> `)
 					menu(conn, "Action Failed, Insufficient Funds to complete the operation.")
 				} else if resp == 2 {
 					fmt.Println()
-					menu(conn, "Action Failed, VM with the requested tag not found.")
+					menu(conn, "Action Failed, VM with the requested name not found.")
 				}
 			} else if operation == 2 {
 				fmt.Print("Please enter the amount of RAM that should be removed from the VM")
@@ -354,7 +386,7 @@ Your Choice >> `)
 					menu(conn, "Action Failed, the requested quantity is greater than the current VM's RAM.")
 				} else if resp == 2 {
 					fmt.Println()
-					menu(conn, "Action Failed, VM with the requested tag not found.")
+					menu(conn, "Action Failed, VM with the requested name not found.")
 				}
 			} else {
 				fmt.Println()
@@ -398,7 +430,7 @@ Your Choice >> `)
 					menu(conn, "Action Failed, Insufficient Funds to complete the operation.")
 				} else if resp == 2 {
 					fmt.Println()
-					menu(conn, "Action Failed, VM with the requested tag not found.")
+					menu(conn, "Action Failed, VM with the requested name not found.")
 				}
 			} else if operation == 2 {
 				fmt.Print("Please enter the CPUs that should be removed from the VM")
@@ -423,7 +455,7 @@ Your Choice >> `)
 					menu(conn, "Action Failed, the requested quantity is greater than the current VM's CPU count.")
 				} else if resp == 2 {
 					fmt.Println()
-					menu(conn, "Action Failed, VM with the requested tag not found.")
+					menu(conn, "Action Failed, VM with the requested name not found.")
 				}
 
 			} else {
@@ -446,11 +478,16 @@ func createvm(conn net.Conn) {
 	var vmname string
 	var vmtag string
 	var choice string
+	var sshkey string
+	var sshkeyname string
 	var image int
 	var winchoice int
 	funcname := "'createVM'"
-	fmt.Print("Enter Vm Name: ")
+	fmt.Print("Enter VM Name: ")
 	fmt.Scan(&vmname)
+	if !isAlphaNumeric(vmname) {
+		menu(conn, "VM name should only contain alphanumeric characters")
+	}
 	fmt.Print("Enter VM Tag: ")
 	fmt.Scan(&vmtag)
 	var osmenu = []byte(`
@@ -478,9 +515,10 @@ Your Choice >> `)
 		fmt.Println("This is to inform you that you are about to waste $150 cloud credits on Windows Machine ")
 		var windowschoice = []byte(`
 ////////////////////////////////////////////////
+//  **Alert**                                 //
 //                                            //
 //      1. Continue                           //
-//      2. Use 0.0001% of your brain          //
+//      2. Use 0.01% of your brain            //
 //                                            //
 ////////////////////////////////////////////////
 
@@ -500,7 +538,16 @@ Your Choice >> `)
 		}
 
 	}
-	sender := padint(0) + padint(len(funcname)) + funcname + padint(len(vmname)) + vmname + padint(len(vmtag)) + vmtag + padint(image)
+	fmt.Println("Please give your SSH public key to be added to the VM [please encode with base64]")
+	fmt.Print("Input >> ")
+	fmt.Scan(&sshkey)
+	if isBase64(sshkey) {
+		fmt.Print("Key accepted, what shall I name this? ")
+		fmt.Scan(&sshkeyname)
+	} else {
+		menu(conn, "Sorry, the key is not in a proper format. Please try again!!")
+	}
+	sender := padint(0) + padint(len(funcname)) + funcname + padint(len(vmname)) + vmname + padint(len(vmtag)) + vmtag + padint(image) + padint(len(sshkey)) + sshkey + padint(len(sshkeyname)) + sshkeyname
 	fmt.Println("Are you sure you want to use $150 from your free subscription to spawn a VM with the selected options? [y/n]")
 	fmt.Print("Choice >> ")
 	fmt.Scan(&choice)
@@ -514,19 +561,18 @@ Your Choice >> `)
 	send(conn, sender)
 	resp := getresp(conn)
 	if resp == 0 {
-		fmt.Println("Successfully created the VM print image, config and say you canyou can scale the vm")
 		details := padint(0)
 		details += padint(len("'statusofmyVM'"))
 		details += "'statusofmyVM'"
-		details += padint(len(vmtag))
-		details += vmtag
+		details += padint(len(vmname))
+		details += vmname
 		send(conn, details)
 		resp := getresp(conn)
 		fmt.Println()
-		menu(conn, "Here are the details of the VM that has just been spawned\n"+recv(conn, resp))
+		menu(conn, "Successfully spawned "+vmname+"\nHere are the details of the VM that has just been spawned\n"+recv(conn, resp)+"\nYou can always edit/scale your VM by using the Modify VM option in the main menu.")
 	} else if resp == 1 {
 		fmt.Println()
-		menu(conn, "VM with the requested tag is already present")
+		menu(conn, "VM with the name "+vmname+" is already present")
 	} else if resp == 2 {
 		fmt.Println()
 		menu(conn, "Funds not sufficient to spawn a VM")
@@ -543,6 +589,17 @@ func register(conn net.Conn) {
 	var password string
 	fmt.Print("\nEnter Email: ")
 	fmt.Scan(&email)
+	if isEmail(email) {
+		if strings.Contains(email, "@blackstab.com") {
+			fmt.Println("We're sorry, this application is only for blackStab customers. Send us over your resume and become a blackStab employee to get your custom @blackstab.com")
+			os.Exit(0)
+		}
+
+	} else {
+		fmt.Println("Please enter a proper email")
+		os.Exit(-1)
+	}
+
 	fmt.Print("Enter Username: ")
 	fmt.Scan(&username)
 	fmt.Print("Enter Password: ")
@@ -557,21 +614,16 @@ func register(conn net.Conn) {
 		fmt.Println("Sorry, password can't be greater than 100 characters")
 		os.Exit(0)
 	}
-	if strings.Contains(email, "\"") {
-		fmt.Println("Email should not contain the character '\"'")
-		os.Exit(0)
-	} else if strings.Contains(email, ";") {
-		fmt.Println("Email should not contain the character \";\"")
-		os.Exit(0)
-	} else if strings.Contains(email, "\\x") {
-		fmt.Println("Email should not contain \"\\x\"")
-		os.Exit(0)
-	}
-
-	if strings.Contains(email, "@blackstab.com") {
-		fmt.Println("We're sorry, this application is only for blackStab customers. Send us over your resume and become a blackStab employee to get your custom email with the domain blackstab.com")
-		os.Exit(0)
-	}
+	// if strings.Contains(email, "\"") {
+	// 	fmt.Println("Email should not contain the character '\"'")
+	// 	os.Exit(0)
+	// } else if strings.Contains(email, ";") {
+	// 	fmt.Println("Email should not contain the character \";\"")
+	// 	os.Exit(0)
+	// } else if strings.Contains(email, "\\x") {
+	// 	fmt.Println("Email should not contain \"\\x\"")
+	// 	os.Exit(0)
+	// }
 	email = "'" + email + "'"
 	sender := padint(1) + padint(len(email)) + email + padint(len(username)) + username + padint(len(password)) + password
 	send(conn, sender)

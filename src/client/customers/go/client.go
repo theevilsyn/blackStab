@@ -63,8 +63,8 @@ func menu(conn net.Conn, op string) {
 		mainfig := figure.NewColorFigure("blackStab Cloud Services", "smslant", "red", true)
 		mainfig.Print()
 		fmt.Println()
-		fmt.Println("Response from the server:")
-		fmt.Print(op + "\n\n")
+		fmt.Println("Response:")
+		fmt.Print("\n" + op + "\n\n")
 	} else {
 		clrscr()
 		mainfig := figure.NewColorFigure("blackStab Cloud Services", "smslant", "red", true)
@@ -76,13 +76,14 @@ func menu(conn net.Conn, op string) {
 //                                                                      //
 //      1. Create a VM                                                  //
 //      2. Modify an existing VM                                        //
-//      3. Delete an existing VM                                        //
+//      3. Delete one of your VMs                                       //
 //      4. Print the status of a VM                                     //
-//      5. List all the VMs associated with this account                //
-//      6. View the current usage of your free subscription             //
-//      7. Remove your account and terminate all the VMs associated     //
+//      5. List your public keys                                        //
+//      6. List all the VMs associated with this account                //
+//      7. View the current usage of your free subscription             //
+//      8. Remove your account and terminate all the VMs associated     //
 //         with your account                                            //
-//      8. Exit                                                         //
+//      9. Exit                                                         //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
@@ -99,13 +100,18 @@ Your Choice >> `)
 	case 4:
 		vmstatus(conn)
 	case 5:
-		listmyvms(conn)
+		getmykey(conn)
 	case 6:
-		viewsubscription(conn)
+		listmyvms(conn)
 	case 7:
-		deleteacc(conn)
+		viewsubscription(conn)
 	case 8:
-		_exit(conn)
+		deleteacc(conn)
+	case 9:
+		fmt.Println("See You Again ;-;")
+		send(conn, "-337")
+		conn.Close()
+		os.Exit(0)
 	default:
 		menu(conn, "")
 	}
@@ -146,3 +152,7 @@ func main() {
 		flag.PrintDefaults()
 	}
 }
+
+// 1. Create a VM
+// 2. Delete a VM
+// 3. Delete a non existing VM
