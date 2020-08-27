@@ -50,7 +50,7 @@ class VM:
         vm = VMStruct(name=name, tag=tag, image=self.images[imageid], tcpPorts=[22,80] , udpPorts=[53])
         if(not path.exists(path.join(self.region, account, name, name + b".details"))):
             open(path.join(self.region, account, name, name + b'.details'), 'w').write(hexlify(str(vm).encode()).decode())
-            open(path.join(self.region, account, name, keyname + b".key"),'w').write(key.decode())
+            open(path.join(self.region, account, name, keyname),'w').write(key.decode())
         else:
             return 1
         return 0
@@ -58,8 +58,8 @@ class VM:
     def getmykey(self, account, name, keyname):
         if(not path.exists(path.join(self.region, account))):
             return "You have no VMs associated with this account"
-        elif(path.exists(path.join(self.region, account, name, keyname + b".key"))):
-            key=open(path.join(self.region, account, name, keyname + b".key")).read()
+        elif(path.exists(path.join(self.region, account, name, keyname)) and path.isfile(path.join(self.region, account, name, keyname))):
+            key=open(path.join(self.region, account, name, keyname)).read()
             return key
         elif(path.exists(path.join(self.region, account, name))):
             keys = b', '.join(list(filter(lambda x: (b'.details' not in x), listdir(path.join(self.region, account, name)))))
@@ -67,7 +67,7 @@ class VM:
         You dont't have the key {} associated to the VM {}
         Here is the list of keys associated with the VM:
         [{}]
-        """.format(keyname.decode(), name.decode(), keys.decode().replace(".key", ""))
+        """.format(keyname.decode(), name.decode(), keys.decode())
             return keylist
         else:
             return "VM with the requested name not found"

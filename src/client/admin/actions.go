@@ -251,7 +251,7 @@ Your Choice >> `)
 				menu(conn, "Successfully "+action+" the TCP Port "+strconv.Itoa(port))
 			} else if resp == 1 {
 				fmt.Println()
-				menu(conn, "TCP Port "+strconv.Itoa(port)+"already "+action)
+				menu(conn, "TCP Port "+strconv.Itoa(port)+" already "+action)
 			} else if resp == 2 {
 				fmt.Println()
 				menu(conn, "VM with the requested name not found")
@@ -312,7 +312,7 @@ Your Choice >> `)
 				menu(conn, "Successfully "+action+" the UDP Port "+strconv.Itoa(port))
 			} else if resp == 1 {
 				fmt.Println()
-				menu(conn, "UDP Port "+strconv.Itoa(port)+"already "+action)
+				menu(conn, "UDP Port "+strconv.Itoa(port)+" already "+action)
 			} else if resp == 2 {
 				fmt.Println()
 				menu(conn, "VM with the requested name not found")
