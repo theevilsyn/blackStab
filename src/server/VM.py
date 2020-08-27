@@ -58,15 +58,15 @@ class VM:
     def getmykey(self, account, name, keyname):
         if(not path.exists(path.join(self.region, account))):
             return "You have no VMs associated with this account"
-        elif(path.exists(path.join(self.region, account, name, keyname))):
-            key=open(path.join(self.region, account, name, keyname)).read()
+        elif(path.exists(path.join(self.region, account, name, keyname + b".key"))):
+            key=open(path.join(self.region, account, name, keyname + b".key")).read()
             return key
         elif(path.exists(path.join(self.region, account, name))):
-            keys = b'\n\t\t'.join(list(filter(lambda x: (b'.details' not in x), listdir(path.join(self.region, account, name)))))
+            keys = b', '.join(list(filter(lambda x: (b'.details' not in x), listdir(path.join(self.region, account, name)))))
             keylist = """
         You dont't have the key {} associated to the VM {}
         Here is the list of keys associated with the VM:
-        {}
+        [{}]
         """.format(keyname.decode(), name.decode(), keys.decode().replace(".key", ""))
             return keylist
         else:

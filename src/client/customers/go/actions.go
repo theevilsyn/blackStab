@@ -395,6 +395,8 @@ Your Choice >> `)
 		} else if resource == 2 {
 			sender += padint(len("'scaleCPU'"))
 			sender += "'scaleCPU'"
+			sender += padint(len(vmname))
+			sender += vmname
 			var cpumenu = []byte(`
 /////////////////////////////////////
 //                                 //
@@ -542,7 +544,7 @@ Your Choice >> `)
 	fmt.Print("Input >> ")
 	fmt.Scan(&sshkey)
 	if isBase64(sshkey) {
-		fmt.Print("Key accepted, what shall I name this? ")
+		fmt.Print("Key accepted, what shall I name this key? ")
 		fmt.Scan(&sshkeyname)
 	} else {
 		menu(conn, "Sorry, the key is not in a proper format. Please try again!!")
