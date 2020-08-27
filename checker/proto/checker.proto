@@ -1,0 +1,37 @@
+syntax = "proto3";
+package checker;
+
+service Checker {
+  rpc PlantFlag (FlagRequest) returns (FlagResponse);
+  rpc CheckService (CheckRequest) returns (ServiceState);
+}
+
+message FlagRequest {
+  string ip = 1;
+  uint32 port = 2;
+}
+
+enum ServiceStatus {
+  UP = 0;
+  DOWN = 1;
+  MUMBLE = 2;
+  CORRUPT = 3;
+}
+
+message ServiceState {
+  ServiceStatus status = 1;
+  string reason = 2;
+}
+
+message FlagResponse {
+  ServiceState state = 1;
+  string flag  = 2;
+  string token = 3;
+}
+
+message CheckRequest {
+  string ip  = 1;
+  uint32 port = 2;
+  string flag = 3;
+  string token = 4;
+}
