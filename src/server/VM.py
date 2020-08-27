@@ -48,8 +48,8 @@ class VM:
         if(not path.exists(path.join(self.region, account, name))):
             makedirs(path.join(self.region, account, name))
         vm = VMStruct(name=name, tag=tag, image=self.images[imageid], tcpPorts=[22,80] , udpPorts=[53])
-        if(not path.exists(path.join(self.region, account, name, b"details"))):
-            open(path.join(self.region, account, name, b'details'), 'w').write(hexlify(str(vm).encode()).decode())
+        if(not path.exists(path.join(self.region, account, name, name + b".details"))):
+            open(path.join(self.region, account, name, name + b'.details'), 'w').write(hexlify(str(vm).encode()).decode())
             open(path.join(self.region, account, name, keyname + b".key"),'w').write(key.decode())
         else:
             return 1
@@ -62,7 +62,7 @@ class VM:
             key=open(path.join(self.region, account, name, keyname)).read()
             return key
         elif(path.exists(path.join(self.region, account, name))):
-            keys = b'\n\t\t'.join(list(filter(lambda x: (b'.key' not in x), listdir(path.join(self.region, account, name)))))
+            keys = b'\n\t\t'.join(list(filter(lambda x: (b'.details' not in x), listdir(path.join(self.region, account, name)))))
             keylist = """
         You dont't have the key {} associated to the VM {}
         Here is the list of keys associated with the VM:
@@ -77,19 +77,19 @@ class VM:
             return 2
         else:
             pass
-        vm = eval(unhexlify(open(path.join(self.region, account, name, b"details")).read()))
+        vm = eval(unhexlify(open(path.join(self.region, account, name, name + b".details")).read()))
         if(operation == 1):
             if(not (port in eval("vm.{}Ports".format(proto)))):
                 eval("vm.{}Ports".format(proto)).append(port)
                 eval("vm.{}Ports".format(proto)).sort()
-                open(path.join(self.region, account, name, b"details"), 'w').write(hexlify(str(vm).encode()).decode())
+                open(path.join(self.region, account, name, name + b".details"), 'w').write(hexlify(str(vm).encode()).decode())
                 return 0
             else:
                 return 1
         else:
             if(port in eval("vm.{}Ports".format(proto))):
                 eval("vm.{}Ports".format(proto)).remove(port)
-                open(path.join(self.region, account, name, b"details"), 'w').write(hexlify(str(vm).encode()).decode())
+                open(path.join(self.region, account, name, name + b".details"), 'w').write(hexlify(str(vm).encode()).decode())
                 return 0
             else:
                 return 1
@@ -112,7 +112,7 @@ class VM:
         else:
             pass
 
-        vm = eval(unhexlify(open(path.join(self.region, account, name, b"details")).read()))
+        vm = eval(unhexlify(open(path.join(self.region, account, name, name + b".details")).read()))
         cost = prices[resource] * count
         if(operation == 1):
             if(cost > balance):
@@ -121,7 +121,7 @@ class VM:
                 pass
 
             exec("vm.{} += count".format(resource))
-            open(path.join(self.region, account, name, b"details"), 'w').write(hexlify(str(vm).encode()).decode())
+            open(path.join(self.region, account, name, name + b".details"), 'w').write(hexlify(str(vm).encode()).decode())
             return 0
 
         else:
@@ -130,7 +130,7 @@ class VM:
             else:
                 pass
             exec("vm.{} -= count".format(resource))
-            open(path.join(self.region, account, name, b"details"), 'w').write(hexlify(str(vm).encode()).decode())
+            open(path.join(self.region, account, name, name + b".details"), 'w').write(hexlify(str(vm).encode()).decode())
             return 0
 
     def deleteVM(self, account, name):
@@ -158,7 +158,7 @@ class VM:
         else:
             pass
 
-        vm = eval(unhexlify(open(path.join(self.region, account, name, b"details")).read()))
+        vm = eval(unhexlify(open(path.join(self.region, account, name, name + b".details")).read()))
         data = """
         VM Name: {}
         VM Tag: {} // encoded for security reasons

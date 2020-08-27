@@ -569,7 +569,7 @@ Your Choice >> `)
 		send(conn, details)
 		resp := getresp(conn)
 		fmt.Println()
-		menu(conn, "Successfully spawned "+vmname+"\nHere are the details of the VM that has just been spawned\n"+recv(conn, resp)+"\nYou can always edit/scale your VM by using the Modify VM option in the main menu.")
+		menu(conn, "Successfully spawned "+vmname+"\nHere are the details of the VM that has been spawned now:\n"+recv(conn, resp)+"\nYou can always edit/scale your VM by using the Modify VM option in the main menu.")
 	} else if resp == 1 {
 		fmt.Println()
 		menu(conn, "VM with the name "+vmname+" is already present")
