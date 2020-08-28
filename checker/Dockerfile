@@ -16,8 +16,8 @@ ENV PWNLIB_NOTERM=true
 
 # Set up protobuf
 COPY proto /checker/proto/
-COPY checker.py
-COPY admin_client /checker/admin_client
-COPY cloud_client /checker/cloud_client
-RUN python -m grpc_tools.protoc -I /app/proto --python_out=. --grpc_python_out=. checker.proto
-ENTRYPOINT ["python","/app/server.py"]
+COPY server.py /checker/server.py
+COPY admin-client /checker/admin_client
+COPY cloud-client /checker/cloud_client
+RUN python -m grpc_tools.protoc -I /checker/proto --python_out=. --grpc_python_out=. checker.proto
+ENTRYPOINT ["python","/checker/server.py"]

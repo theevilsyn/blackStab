@@ -1,0 +1,8 @@
+version: '3'
+services:
+  blackstab-checker:
+    container_name: blackstab-checker
+    build:
+        context: .
+    ports:
+      - "50051:50051"
