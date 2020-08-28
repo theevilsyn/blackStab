@@ -4,10 +4,11 @@ from blackStab.utils import *
 from blackStab.utils import _recv, _send
 from binascii import hexlify, unhexlify
 from _thread import start_new_thread
-from blackStab.cloud import console, VMStruct, accounts
+from blackStab.cloud import console as cshell
+from blackStab.cloud import VMStruct, accounts
 
 def client_thread(conn, addr):
-    vm = console()
+    console = cshell()
     account = accounts()
     actions = [
         "'createVM'", "'ruleAddTCP'",
