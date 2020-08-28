@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from concurrent import futures
 from base64 import b64encode as b64
+from base64 import b64decode
 import logging
 import random
 import string
@@ -81,9 +82,17 @@ def create_vm(io, vm_name, vm_tag):
     else:
         return (False, output)
 
-    
 
+def get_status_of_vm(io, vm_name):
+    io.recvuntil(PROMPT)
+    io.sendline(b'4')
+    io.recvuntil("Enter VM Name: ")
+    io.sendline(vm_name)
+    io.recvuntil("VM Tag: ")
 
+    flag = io.recvuntil(" ").rstrip()
+    flag = b64decode(flag)
+    return flag
 
 def set_flag(ip,port,flag):
     context.log_level="error"
@@ -120,35 +129,41 @@ def set_flag(ip,port,flag):
         status = checker.ServiceStatus(state = state, reason = reason)
         return (status,"")
     
+    flag_token = ":".join(email, password, token)
     status = checker.ServiceStatus(state = checker.ServiceState.UP , reason = reason)
     client.close()
-    return (status, token)
+    return (status, flag_token)
 
-def get_flag(ip,port,flag,token):
-        context.log_level="error"
-        try:
-            io = connect(ip,port,timeout=1)
-        except Exception as e:
-            state = checker.ServiceState.DOWN
-            reason = str(e)
-            return checker.ServiceStatus(state = state, reason = reason)
+def get_flag(ip,port,flag,flag_token):
+    context.log_level="error"
 
-        try:
+    try:
+        client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
+    except Exception as e:
+        state = checker.ServiceState.DOWN
+        reason = str(e)
+        return checker.ServiceStatus(state = state, reason = reason)
+    
+    email, password, token = flag_token.split(":")
 
-            io.send(flag)
-            recv_flag = io.recv(len(flag))
-            io.close()
-            if recv_flag == flag:
-                return checker.ServiceStatus(state = checker.ServiceState.UP,
-                                             reason = "")
-            else:
-                return checker.ServiceStatus(state = checker.ServiceState.CORRUPT,
-                                             reason = "Unable to retrive flag")
-        except Exception as e:
-            io.close()
-            state = checker.ServiceState.MUMBLE
-            reason = str(e)
-            return checker.ServiceStatus(state = state, reason = reason)
+    status, reason = login(client, email, password)
+
+    try:
+
+        recv_flag = get_status_of_vm(client, token)
+
+        client.close()
+        if recv_flag == flag:
+            return checker.ServiceStatus(state = checker.ServiceState.UP,
+                                            reason = "")
+        else:
+            return checker.ServiceStatus(state = checker.ServiceState.CORRUPT,
+                                            reason = "Unable to retrive flag")
+    except Exception as e:
+        io.close()
+        state = checker.ServiceState.MUMBLE
+        reason = str(e)
+        return checker.ServiceStatus(state = state, reason = reason)
 
 
 class Checker(checker_grpc.CheckerServicer):
