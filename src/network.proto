@@ -1,0 +1,248 @@
+syntax = "proto3";
+
+message register { // from client to server
+    string timestamp = 1; // always equal in length
+    
+    int32 function_len = 3;
+    string function_name = 4;
+    
+    int32 username_len = 5;
+    string username = 6;
+
+    int32 email_len = 7;
+    string email = 8;
+
+    int32 passwd_len = 9;
+    string password = 10; 
+    
+    /*
+    returns int32
+    ret 0 --> Successfully registered the user
+    // ret 3 --> Not a valid email // Should be implemented in client
+    ret 1 --> Email already Taken
+    ret 2 --> Password length is not greater that 12
+    */
+}
+
+message login { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 email_len = 5;
+    string email = 6;
+
+    int32 passwd_len = 7;
+    string password = 8;
+    
+    /*
+    returns int32
+    ret 0 --> Successfuly logged in
+    ret 1 --> User not found
+    ret 2 --> Incorrect password
+    */
+}
+
+message viewSubscription{ // from client to server
+    string timestamp = 1; // always equal in length
+    
+    int32 function_len = 3;
+    string function_name = 4;
+
+    /*
+    returns int32
+    ret N --> N is the number of credits left in the subscription
+    */
+}
+
+message createVM { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 vmname_len = 5;
+    string vmname = 6;
+
+    int32 tag_len = 7;
+    string tag = 8;
+    
+    /*
+    returns int32
+    ret 0 --> Successfully created the VM
+    ret 1 --> VM with the tag already present
+    ret 2 --> Insufficient funds in the subscription to spawn a VM
+    */
+}
+
+message removeAccount { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 passwd_len = 7;
+    string password = 8;
+    
+    /*
+    returns int32
+    ret 0 --> Successfuly deleted account
+    ret 1 --> User not found
+    ret 2 --> Incorrect password
+    */
+
+}
+
+message RuleAddTCP { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 vmtag_len = 5;
+    string vmtag = 6;
+    
+    int32 port = 7;
+    int32 operation = 8; // 0 to open ;-; and 1 to close 
+    /*
+    returns int32
+    ret 0 --> Successfully Opened/Closed the port
+    ret 1 --> Port already opened/closed
+    ret 2 --> VM Not found with the given tag
+    */
+}
+
+message RuleAddUDP { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 vmtag_len = 5;
+    string vmtag = 6;
+
+    int32 port = 7;
+    int32 operation = 8; // 0 to add ;-; and 1 to close 
+    /*
+    returns int32
+    ret 0 --> Successfully Opened/Closed the port
+    ret 1 --> Port already opened/closed
+    ret 2 --> VM Not found with the given tag
+    */
+}
+
+message UpScaleRAM { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 vmtag_len = 5;
+    string vmtag = 6;
+
+    int32 ramcount = 7;
+    /*
+    returns int32
+    ret 0 --> Successfully added the required RAM
+    ret 1 --> Insufficient funds in the subscription
+    ret 2 --> VM with the given tag not found
+    */
+}
+
+message DownScaleRAM { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 vmtag_len = 5;
+    string vmtag = 6;
+
+    int32 ramcount = 7;
+    /*
+    returns int32
+    ret 0 --> Successfully downscaled the VM by removing the RAM Count given
+    ret 1 --> VM Already at the minimum RAM count
+    ret 2 --> VM with the given tag not found
+    */
+}
+
+message UpScaleCPU { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 vmtag_len = 5;
+    string vmtag = 6;
+
+    int32 cpucount = 7;
+    /*
+    returns int32
+    ret 0 --> Successfully added the given CPU count
+    ret 1 --> Insufficient funds in the subscription
+    ret 2 --> VM with the given tag not found
+    */
+}
+
+message DownScaleCPU { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 vmtag_len = 5;
+    string vmtag = 6;
+
+    int32 cpucount = 7;
+    /*
+    returns int32
+    ret 0 --> Successfully downscaled the VM by removing the given number of CPUs
+    ret 1 --> VM Already at the minimum CPU count
+    ret 2 --> VM with the given tag not found
+    */
+}
+
+message DeleteVM { // from client to server
+    string timestamp = 1; // always equal in length
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 vmtag_len = 5;
+    string vmtag = 6;
+    /*
+    returns int32
+    ret 0 --> Successfully deleted the VM
+    ret 1 --> VM with the given tag not found
+    */
+}
+
+message StatusVM { // from client to server
+    int32 timestamp = 1;
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    int32 vmtag_len = 5;
+    string vmtag = 6;
+    
+    /*
+    returns a parsed string with all the VM stats and the client will print that.
+    this is the function where the packet manipulation bug can be triggered since the client will print the direct output of the function that is called.
+    */
+}
+
+message ListAllMyVMs {
+    int32 timestamp = 1;
+
+    int32 function_len = 3;
+    string function_name = 4;
+
+    /*
+    returns either an integer or a string
+    ret -1 --> No VMs under the user account
+    ret X  --> X is the concatenation '\n' seperated VM tags
+    */
+}

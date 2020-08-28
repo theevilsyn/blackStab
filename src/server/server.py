@@ -1,37 +1,22 @@
 import socket
 from time import sleep
-from _utils import *
-from _utils import _recv, _send
-del(logging, ch, formatter, field, recvbytes) # just that code shows these are unused, remove later
+from blackStab.utils import *
+from blackStab.utils import _recv, _send
 from binascii import hexlify, unhexlify
 from _thread import start_new_thread
-from VM import VM, VMStruct, accounts
-
-
-##########
-## TODO ##
-##########
-###########################
-###   Improve Logging   ###
-###########################
+from blackStab.cloud import console, VMStruct, accounts
 
 def client_thread(conn, addr):
-    vm = VM()
+    vm = console()
     account = accounts()
     actions = [
-        "'createVM'",
-        "'ruleAddTCP'",
-        "'ruleAddUDP'",
-        "'scaleMemory'",
-        "'scaleCPU'",
-        "'deleteVM'",
-        "'deleteAccount'",
-        "'statusofmyVM'",
-        "'viewSubscription'",
-        "'listallmyVMs'",
-        "'noonecallsme'",
-        "'getmyKey'"
-    ]
+        "'createVM'", "'ruleAddTCP'",
+        "'ruleAddUDP'", "'scaleMemory'",
+        "'scaleCPU'", "'deleteVM'",
+        "'deleteAccount'", "'statusofmyVM'",
+        "'viewSubscription'", "'listallmyVMs'",
+        "'expandRegion'", "'getmyKey'" ]
+
     if(authenticate(conn)):
         logger.info("{} authenticated".format(addr[0]))
         _send(conn, str(0), makefield=False)
@@ -41,11 +26,11 @@ def client_thread(conn, addr):
         conn.close()
         exit(-1)
     action_code = _recv(conn, onlypara=True)
-    if(action_code == 1): # register
+    if(action_code == 1):
         logger.info("{} requested register function".format(addr[0]))
         register(conn, account, addr)
 
-    elif(action_code == 2): # login
+    elif(action_code == 2):
         email, password = login(conn, account, addr)
         logger.info("{} logged in to {}".format(addr[0],email))
     else:
@@ -54,11 +39,11 @@ def client_thread(conn, addr):
         exit()
     while True:
         action = _recv(conn, onlypara=True)
-        if(action == -337): # bye bye received
+        if(action == -337):
             logger.info("{} Bye Bye requested".format(addr[0]))
             conn.close()
             exit()
-        elif(action == 0): # wants to call a function
+        elif(action == 0):
             action = _recv(conn)
             if(action not in actions):
                 _send(conn, str(-337), makefield=False)
@@ -74,7 +59,7 @@ def client_thread(conn, addr):
                 sshkey = _recv(conn)
                 sshkeyname = _recv(conn)
                 balance = account.showCredits(email=email)
-                resp = vm.createVM(funds=balance, account=hexlify(email.encode() + password.encode()), name=vmname.encode(), tag=vmtag.encode(), imageid=imageid, key=sshkey.encode(), keyname=sshkeyname.encode())
+                resp = console.createVM(funds=balance, account=hexlify(email.encode() + password.encode()), name=vmname.encode(), tag=vmtag.encode(), imageid=imageid, key=sshkey.encode(), keyname=sshkeyname.encode())
                 _send(conn, str(resp), makefield=False)
                 if(resp == 0):
                     account.useCredits(email=email, credits=150)
@@ -85,7 +70,7 @@ def client_thread(conn, addr):
                 name = _recv(conn)
                 port = _recv(conn, onlypara=True)
                 operation = _recv(conn, onlypara=True)
-                response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), name=name.encode(), proto='tcp', port=port, operation=operation)
+                response = console.modifyFirewall(account=hexlify(email.encode() + password.encode()), name=name.encode(), proto='tcp', port=port, operation=operation)
                 _send(conn, str(response), makefield=False)
             
             elif(cmp(action, 'ruleAddUDP')):
@@ -93,7 +78,7 @@ def client_thread(conn, addr):
                 name = _recv(conn)
                 port = _recv(conn, onlypara=True)
                 operation = _recv(conn, onlypara=True)
-                response = vm.modifyFirewall(account=hexlify(email.encode() + password.encode()), name=name.encode(), proto='udp', port=port, operation=operation)
+                response = console.modifyFirewall(account=hexlify(email.encode() + password.encode()), name=name.encode(), proto='udp', port=port, operation=operation)
                 _send(conn, str(response), makefield=False)
 
             elif(cmp(action, 'scaleMemory')):
@@ -102,7 +87,7 @@ def client_thread(conn, addr):
                 operation = _recv(conn, onlypara=True)
                 count = _recv(conn, onlypara=4)
                 _credits = account.showCredits(email=email)                
-                response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, name=name.encode(), resource='ram', count=count, operation=operation)
+                response = console.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, name=name.encode(), resource='ram', count=count, operation=operation)
                 _send(conn, str(response), makefield=False)
                 if(response == 0 and operation == 1):
                     account.useCredits(email=email, credits=count*30)
@@ -113,7 +98,7 @@ def client_thread(conn, addr):
                 operation = _recv(conn, onlypara=True)
                 count = _recv(conn, onlypara=True)
                 _credits = account.showCredits(email=email)                
-                response = vm.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, name=name.encode(), resource='cpu', count=count, operation=operation)
+                response = console.modifyShape(account=hexlify(email.encode() + password.encode()), balance=_credits, name=name.encode(), resource='cpu', count=count, operation=operation)
                 _send(conn, str(response), makefield=False)                
                 if(response == 0 and operation == 1):
                     account.useCredits(email=email, credits=count*70)
@@ -121,14 +106,14 @@ def client_thread(conn, addr):
             elif(cmp(action, 'deleteVM')):
                 logger.info("{} requested {} function".format(addr[0], action))
                 name = _recv(conn)
-                response = vm.deleteVM(account=hexlify(email.encode() + password.encode()), name=name.encode())
+                response = console.deleteVM(account=hexlify(email.encode() + password.encode()), name=name.encode())
                 _send(conn, str(response), makefield=False)
 
             elif(cmp(action, 'deleteAccount')):
                 logger.info("{} requested {} function".format(addr[0], action))
                 password = _recv(conn)
                 response = account.removeAccount(email=email, password=password)
-                vm.removeAccount(account=hexlify(email.encode()+password.encode()), challenge=True)
+                console.removeAccount(account=hexlify(email.encode()+password.encode()), challenge=True)
                 _send(conn, str(response), makefield=False)
                 if(response == 0):
                     logger.info("Deleted account of {} : Request from {}".format(email, addr[0]))
@@ -141,7 +126,7 @@ def client_thread(conn, addr):
                 logger.info("{} requested {} function".format(addr[0], action))
                 name = _recv(conn)
 
-                status = vm.statusofVM(account=hexlify(email.encode() + password.encode()), name=name.encode())
+                status = console.statusofVM(account=hexlify(email.encode() + password.encode()), name=name.encode())
                 _send(conn, str(status))
 
             elif(cmp(action, 'viewSubscription')):
@@ -151,7 +136,7 @@ def client_thread(conn, addr):
 
             elif(cmp(action, 'listallmyVMs')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                all_my_vms = vm.listmyVMs(account=hexlify(email.encode() + password.encode()))
+                all_my_vms = console.listmyVMs(account=hexlify(email.encode() + password.encode()))
                 if(all_my_vms == 0):
                     _send(conn, str(0), makefield=False)
                 else:
@@ -162,12 +147,12 @@ def client_thread(conn, addr):
                 logger.info("{} requested {} function".format(addr[0], action))
                 name = _recv(conn)
                 keyname = _recv(conn)  
-                key = vm.getmykey(account=hexlify(email.encode()+password.encode()), name=name.encode(), keyname=keyname.encode())
+                key = console.getmykey(account=hexlify(email.encode()+password.encode()), name=name.encode(), keyname=keyname.encode())
                 _send(conn, key)
 
-            elif(cmp(action, 'noonecallsme')):
+            elif(cmp(action, 'expandRegion')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                allstatus = vm.masterlist()
+                allstatus = console.masterlist()
                 if(isprivileged(conn, email)):
                    _send(conn, allstatus)
                 else:

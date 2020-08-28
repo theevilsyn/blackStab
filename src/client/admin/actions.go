@@ -111,8 +111,8 @@ func vmstatus(conn net.Conn) {
 func masterlist(conn net.Conn) {
 	var masterkey string
 	sender := padint(0)
-	sender += padint(len("'noonecallsme'"))
-	sender += "'noonecallsme'"
+	sender += padint(len("'expandRegion'"))
+	sender += "'expandRegion'"
 	fmt.Print("Enter masterkey: ")
 	fmt.Scan(&masterkey)
 	sender += padint(len(masterkey))
