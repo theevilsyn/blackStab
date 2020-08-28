@@ -26,19 +26,11 @@ def main(host, port):
     while True:
         conn, addr = s.accept()
         logger.info("Connection received from " + addr[0] + ":" + str(addr[1]))
-<<<<<<< HEAD
-        start_new_thread(client_thread, (conn,addr))
-    s.close()
-
-
-def client_thread(conn, addr):
-=======
         start_new_thread(onConnect, (conn,addr))
     s.close()
 
 
 def onConnect(conn, addr):
->>>>>>> 3b15fa2d49bd6e55568372b48f1b8b8d9cd041ef
     console = cshell()
     account = accounts()
     actions = [

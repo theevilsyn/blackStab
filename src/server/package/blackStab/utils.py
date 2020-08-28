@@ -48,7 +48,7 @@ def recvbytes(conn, remains):
             break
         buf += data
         remains -= len(data)
-    return (lambda buf: rep(r'[-;"#$%&(!)*+:;<>?\\^_`{|}~]', r'', buf.decode()).encode())(buf)
+    return (lambda buf: rep(r'[-;"#$%&(!)*+:;<>?\\^_`|~]', r'', buf.decode()).encode())(buf)
 
 def cmp(str1,str2):
     arg2 = str2
