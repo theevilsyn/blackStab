@@ -130,7 +130,7 @@ def set_flag(ip,port,flag):
         return (status,"")
     
     flag_token = ":".join([email, password, token])
-    status = checker.ServiceState(status = checker.ServiceStatus.UP , reason = reason)
+    status = checker.ServiceState(status = checker.ServiceStatus.UP , reason = "")
     client.close()
     return (status, flag_token)
 
@@ -151,7 +151,15 @@ def get_flag(ip,port,flag,flag_token):
     try:
 
         recv_flag = get_status_of_vm(client, token)
-
+        if not type(recv_flag) == type(flag):
+            try:
+                recv_flag = recv_flag.encode()
+            except:
+                pass
+            try:
+                flag = flag.encode()
+            except:
+                pass
         client.close()
         if recv_flag == flag:
             return checker.ServiceState(status = checker.ServiceStatus.UP,
