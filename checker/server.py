@@ -67,16 +67,16 @@ def create_vm(io, vm_name, vm_tag):
     io.sendline(vm_tag)
 
     io.recvuntil(PROMPT)
-    io.sendline(random.choice(range(5))+1)
+    io.sendline(str(random.choice(range(5))+1))
 
     io.recvuntil("Input >> ")
     io.sendline(b64(gen_rand_str(64).encode()))
-    io.sendline('what shall I name this key? ')
+    io.recvuntil('what shall I name this key? ')
     io.sendline( gen_rand_str(7))
     io.recvuntil("Choice >> ")
     io.sendline("y")
 
-    output = io.recvline()
+    output = io.recvuntil("//////////")
     if b"Successfully" in output:
         return (True, output)
     else:
@@ -86,9 +86,9 @@ def create_vm(io, vm_name, vm_tag):
 def get_status_of_vm(io, vm_name):
     io.recvuntil(PROMPT)
     io.sendline(b'4')
-    io.recvuntil("Enter VM Name: ")
+    io.recvuntil("Enter VM name: ")
     io.sendline(vm_name)
-    io.recvuntil("VM Tag: ")
+    io.recvuntil("VM Tag: ", timeout=3)
 
     flag = io.recvuntil(" ").rstrip()
     flag = b64decode(flag)
@@ -101,7 +101,7 @@ def set_flag(ip,port,flag):
     except Exception as e:
         state = checker.ServiceStatus.DOWN
         reason = str(e)
-        status = checker.ServiceState(state = state, reason = reason)
+        status = checker.ServiceState(status = state, reason = reason)
         return (status, "")
 
     # Register a new user
@@ -112,7 +112,7 @@ def set_flag(ip,port,flag):
     except Exception as e:
         state = checker.ServiceStatus.DOWN
         reason = str(e)
-        status = checker.ServiceState(state = state, reason = reason)
+        status = checker.ServiceState(status = state, reason = reason)
         return (status, "")
     
     # login and plant flag
@@ -126,11 +126,11 @@ def set_flag(ip,port,flag):
         client.close()
         state = checker.ServiceStatus.MUMBLE
         reason = str(e)
-        status = checker.ServiceState(state = state, reason = reason)
+        status = checker.ServiceState(status = state, reason = reason)
         return (status,"")
     
-    flag_token = ":".join(email, password, token)
-    status = checker.ServiceState(state = checker.ServiceStatus.UP , reason = reason)
+    flag_token = ":".join([email, password, token])
+    status = checker.ServiceState(status = checker.ServiceStatus.UP , reason = "")
     client.close()
     return (status, flag_token)
 
@@ -142,7 +142,7 @@ def get_flag(ip,port,flag,flag_token):
     except Exception as e:
         state = checker.ServiceStatus.DOWN
         reason = str(e)
-        return checker.ServiceState(state = state, reason = reason)
+        return checker.ServiceState(status = state, reason = reason)
     
     email, password, token = flag_token.split(":")
 
@@ -151,19 +151,27 @@ def get_flag(ip,port,flag,flag_token):
     try:
 
         recv_flag = get_status_of_vm(client, token)
-
+        if not type(recv_flag) == type(flag):
+            try:
+                recv_flag = recv_flag.encode()
+            except:
+                pass
+            try:
+                flag = flag.encode()
+            except:
+                pass
         client.close()
         if recv_flag == flag:
-            return checker.ServiceState(state = checker.ServiceStatus.UP,
+            return checker.ServiceState(status = checker.ServiceStatus.UP,
                                             reason = "")
         else:
-            return checker.ServiceState(state = checker.ServiceStatus.CORRUPT,
+            return checker.ServiceState(status = checker.ServiceStatus.CORRUPT,
                                             reason = "Unable to retrive flag")
     except Exception as e:
         client.close()
         state = checker.ServiceStatus.MUMBLE
         reason = str(e)
-        return checker.ServiceState(state = state, reason = reason)
+        return checker.ServiceState(status = state, reason = reason)
 
 
 class Checker(checker_grpc.CheckerServicer):

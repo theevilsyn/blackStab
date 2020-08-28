@@ -16,7 +16,7 @@ checker_port = 50051
 # Invoke plant flag
 def test_plant_flag(ip, port):
     # open a gRPC channel
-    channel = grpc.insecure_channel('localhost:{}'.format(checker_port))
+    channel = grpc.insecure_channel("localhost:50051")#'http://:{}'.format(checker_port))
 
     # create a stub (client)
     stub = checker_grpc.CheckerStub(channel)
