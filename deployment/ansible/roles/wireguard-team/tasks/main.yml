@@ -1,0 +1,20 @@
+---
+  - name: Install WireGuard
+    apt:
+      name: wireguard
+      update_cache: yes
+  - name: Copy Team wireguard Configuration
+    copy:
+      src: files/{{ ansible_hostname }}.wg
+      dest: /etc/wireguard/game.conf
+      mode: "0600"
+  - name: "Enable ipv4 forward"
+    sysctl:
+      name: net.ipv4.ip_forward
+      value: '1'
+      sysctl_set: yes 
+  - name: Enable game
+    systemd:
+      name: wg-quick@game
+      state: started
+      enabled: yes

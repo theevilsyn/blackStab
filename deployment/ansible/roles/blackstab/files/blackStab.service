@@ -1,0 +1,9 @@
+[Unit]
+Description=blackStab cloud services
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/blackStab/server.py
+
+[Install]
+WantedBy=multi-user.target

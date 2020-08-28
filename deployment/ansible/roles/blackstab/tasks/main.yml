@@ -1,0 +1,80 @@
+---
+#- name: "Install required apt packages"
+  - name: "Copy required files"
+    apt:
+      package:
+        - python3
+        - python3-pip
+        - mysql-server
+      update_cache: yes
+
+  - name: "Create Directory"
+    file:
+      path: /opt/blackStab
+      state: directory
+      path: /opt/blackStab/package
+      state: directory
+      path: /opt/blackStab/package/blackStab
+
+  - name: "Copy the package files"
+    copy:
+      src: "{{ item }}"
+      dest: /opt/blackStab/package
+      mode: 0777
+    with_fileglob:
+      - files/package/*
+
+  - name: "Copy python files for package installation"
+    copy:
+      src: "{{ item }}"
+      dest: /opt/blackStab/package/blackStab
+      mode: 0777
+    with_fileglob:
+      - files/package/blackStab/*
+
+  - name: "Add server challenge files"
+    copy:
+      src: "{{ item }}"
+      dest: /opt/blackStab
+      mode: 0777
+    with_fileglob:
+      - files/server/*
+
+  - name: "Service"
+    copy:
+      src: files/blackStab.service
+      dest: /lib/systemd/system/blackStab.service
+      mode: 0777
+
+  - pip:
+      name: 
+        - setuptools
+        - dataclasses
+        - mysql-connector
+        - PyCryptoDome
+      executable: pip3
+
+
+  - shell: "cd /opt/blackStab/package && pip3 install ."
+
+  - name: "My-SQL"
+    shell: |
+      mysql -u root -e "CREATE DATABASE blackStab"
+      mysql -u root blackStab < /opt/blackStab/package/users.sql
+      sed -i 's/0.0.0.0/127.0.0.1/g' /etc/mysql/my.cnf
+      exit 0
+    args: 
+      executable: /bin/bash 
+
+#remove package
+  - name: "Remove package files"
+    file:
+      path: /opt/blackStab/package/
+      state: absent
+
+  - file:
+      path: /opt/blackStab/blackStab.service
+      state: absent
+
+
+

@@ -1,0 +1,20 @@
+---
+  - name: Install WireGuard
+    apt:
+      name: wireguard
+      update_cache: yes
+  - name: Copy WireGuard Configuration file
+    copy:
+      src: files/game.conf
+      dest: /etc/wireguard/game.conf
+      mode: "0600"
+  - name: Enable game
+    systemd:
+      name: wg-quick@game
+      state: started
+      enabled: yes
+  - name: Enable Ipv4 Forwarding
+    sysctl:
+      name: net.ipv4.ip_forward
+      value: '1'
+      sysctl_set: yes
