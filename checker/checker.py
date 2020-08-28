@@ -30,7 +30,7 @@ def recvuntil(io,string):
 
 
 def register(io):
-    username = gen_rand_str(random.randint(7, 13)
+    username = gen_rand_str(random.randint(7, 13))
     email = username + "@gmail.com"
     password = gen_rand_str(random.randint(12, 15))
     io.recvuntil("Enter Email: ")
@@ -59,14 +59,14 @@ def login(io, email, password):
         return (False, output)
 
 def create_vm(io, vm_name, vm_tag):
-    io.recvuntil(PROMPT})
+    io.recvuntil(PROMPT)
     io.sendline(b'1')
     io.recvuntil("Enter VM Name: ")
     io.sendline(vm_name)
     io.recvuntil("Enter VM Tag: ")
     io.sendline(vm_tag)
 
-    io.recvuntil(PROMPT})
+    io.recvuntil(PROMPT)
     io.sendline(random.choice(range(5))+1)
 
     io.recvuntil("Input >> ")
@@ -99,9 +99,9 @@ def set_flag(ip,port,flag):
     try:
         client = process("./cloud-client -ip={} -port={} -rapid-connect -register".format(ip, port), shell=True)
     except Exception as e:
-        state = checker.ServiceState.DOWN
+        state = checker.ServiceStatus.DOWN
         reason = str(e)
-        status = checker.ServiceStatus(state = state, reason = reason)
+        status = checker.ServiceState(state = state, reason = reason)
         return (status, "")
 
     # Register a new user
@@ -110,9 +110,9 @@ def set_flag(ip,port,flag):
     try:
         client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
     except Exception as e:
-        state = checker.ServiceState.DOWN
+        state = checker.ServiceStatus.DOWN
         reason = str(e)
-        status = checker.ServiceStatus(state = state, reason = reason)
+        status = checker.ServiceState(state = state, reason = reason)
         return (status, "")
     
     # login and plant flag
@@ -124,13 +124,13 @@ def set_flag(ip,port,flag):
         
     except Exception as e:
         client.close()
-        state = checker.ServiceState.MUMBLE
+        state = checker.ServiceStatus.MUMBLE
         reason = str(e)
-        status = checker.ServiceStatus(state = state, reason = reason)
+        status = checker.ServiceState(state = state, reason = reason)
         return (status,"")
     
     flag_token = ":".join(email, password, token)
-    status = checker.ServiceStatus(state = checker.ServiceState.UP , reason = reason)
+    status = checker.ServiceState(state = checker.ServiceStatus.UP , reason = reason)
     client.close()
     return (status, flag_token)
 
@@ -140,9 +140,9 @@ def get_flag(ip,port,flag,flag_token):
     try:
         client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
     except Exception as e:
-        state = checker.ServiceState.DOWN
+        state = checker.ServiceStatus.DOWN
         reason = str(e)
-        return checker.ServiceStatus(state = state, reason = reason)
+        return checker.ServiceState(state = state, reason = reason)
     
     email, password, token = flag_token.split(":")
 
@@ -154,16 +154,16 @@ def get_flag(ip,port,flag,flag_token):
 
         client.close()
         if recv_flag == flag:
-            return checker.ServiceStatus(state = checker.ServiceState.UP,
+            return checker.ServiceState(state = checker.ServiceStatus.UP,
                                             reason = "")
         else:
-            return checker.ServiceStatus(state = checker.ServiceState.CORRUPT,
+            return checker.ServiceState(state = checker.ServiceStatus.CORRUPT,
                                             reason = "Unable to retrive flag")
     except Exception as e:
-        io.close()
-        state = checker.ServiceState.MUMBLE
+        client.close()
+        state = checker.ServiceStatus.MUMBLE
         reason = str(e)
-        return checker.ServiceStatus(state = state, reason = reason)
+        return checker.ServiceState(state = state, reason = reason)
 
 
 class Checker(checker_grpc.CheckerServicer):
@@ -194,6 +194,6 @@ def serve():
 
 
 if __name__ == '__main__':
-    context.debug = False
+    #context.debug = False
     serve()
 
