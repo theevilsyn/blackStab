@@ -70,17 +70,19 @@ def create_vm(io, vm_name, vm_tag):
     io.sendline(str(random.choice(range(5))+1))
 
     io.recvuntil("Input >> ")
-    io.sendline(b64(gen_rand_str(64).encode()))
+    secretkey = b64(gen_rand_str(64).encode()).decode()
+    io.sendline( secretkey )
     io.recvuntil('what shall I name this key? ')
-    io.sendline( gen_rand_str(7))
+    keyname = gen_rand_str(7)
+    io.sendline( keyname )
     io.recvuntil("Choice >> ")
     io.sendline("y")
 
     output = io.recvuntil("//////////")
     if b"Successfully" in output:
-        return (True, output)
+        return (True, output, secretkey, keyname)
     else:
-        return (False, output)
+        return (False, output, secretkey, keyname)
 
 
 def get_status_of_vm(io, vm_name):
@@ -93,6 +95,30 @@ def get_status_of_vm(io, vm_name):
     flag = io.recvuntil(" ").rstrip()
     flag = b64decode(flag)
     return flag
+
+
+def list_public_key(io, vm_name, secretkey, keyname):
+    io.recvuntil(PROMPT)
+    io.sendline(b'5')
+    io.recvuntil("Enter VM name: ")
+    io.sendline(vm_name)
+    io.recvuntil('Key name: ')
+    io.sendline(keyname)
+
+    try:
+        io.recvuntil('Response:\n\n', timeout = 3)
+        key = io.recvline().rstrip()
+        try:
+            key = key.decode()
+        except:
+            pass
+        
+        if key == secretkey:
+            return (True, "Key verified")
+        else:
+            return (False, "Wrong key: {}".format(key))
+    except:
+        return (False, "Unable to get public key")
 
 def set_flag(ip,port,flag):
     context.log_level="error"
@@ -120,7 +146,7 @@ def set_flag(ip,port,flag):
     
     token = gen_rand_str(16)
     try: # to plant the flag
-        status, reason = create_vm(client, token, flag)
+        status, reason, secretkey, keyname = create_vm(client, token, flag)
         
     except Exception as e:
         client.close()
@@ -129,7 +155,7 @@ def set_flag(ip,port,flag):
         status = checker.ServiceState(status = state, reason = reason)
         return (status,"")
     
-    flag_token = ":".join([email, password, token])
+    flag_token = ":".join([email, password, token, secretkey, keyname])
     status = checker.ServiceState(status = checker.ServiceStatus.UP , reason = "")
     client.close()
     return (status, flag_token)
@@ -144,7 +170,7 @@ def get_flag(ip,port,flag,flag_token):
         reason = str(e)
         return checker.ServiceState(status = state, reason = reason)
     
-    email, password, token = flag_token.split(":")
+    email, password, token, secretkey, keyname = flag_token.split(":")
 
     status, reason = login(client, email, password)
 
@@ -173,6 +199,38 @@ def get_flag(ip,port,flag,flag_token):
         reason = str(e)
         return checker.ServiceState(status = state, reason = reason)
 
+def check_functionality(ip, port, flag_token):
+    context.log_level="error"
+
+    try:
+        client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
+    except Exception as e:
+        state = checker.ServiceStatus.DOWN
+        reason = str(e)
+        return checker.ServiceState(status = state, reason = reason)
+    
+    email, password, token, secretkey, keyname = flag_token.split(":")
+
+    status, reason = login(client, email, password)
+    
+
+    try:
+
+        status, reason = list_public_key(client, token, secretkey, keyname)
+        client.close()
+        if status == True:
+            return checker.ServiceState(status = checker.ServiceStatus.UP,
+                                            reason = "")
+        else:
+            return checker.ServiceState(status = checker.ServiceStatus.MUMBLE,
+                                            reason = reason)
+    except Exception as e:
+        client.close()
+        state = checker.ServiceStatus.MUMBLE
+        reason = str(e)
+        return checker.ServiceState(status = state, reason = reason)
+    
+
 
 class Checker(checker_grpc.CheckerServicer):
     def PlantFlag(self,request,context):
@@ -189,6 +247,12 @@ class Checker(checker_grpc.CheckerServicer):
                         request.flag,request.token)
         print("Check Service {} -> {} : {}"
                 .format(request.ip,request.port,service_state.state))
+        
+        if service_state.status == checker.ServiceStatus.UP:
+            # if we can retrieve the flag, check if they have made an illegal patch
+            function_state = check_functionality(request.ip, request.port, request.token)
+            return function_state
+        
         return service_state
 
 def serve():
