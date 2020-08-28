@@ -59,7 +59,6 @@ func adminauth(conn net.Conn) {
 
 	chlen := getresp(conn)
 	challenge := recv(conn, chlen)
-	fmt.Print(challenge)
 	der, _ := pem.Decode(masala)
 	if der == nil {
 		fmt.Println("No keys!!")

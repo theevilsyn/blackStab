@@ -7,6 +7,29 @@ from _thread import start_new_thread
 from blackStab.cloud import console as cshell
 from blackStab.cloud import VMStruct, accounts
 
+def main(host, port):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except socket.error as msg:
+        logger.error("Could not create socket. Error: " + str(msg))
+        exit()
+    
+    logger.info("Socket Created")
+    try:
+        s.bind((host, port))
+        logger.info("Socket Bound to port " + str(port))
+    except socket.error as msg:
+        logger.error("Bind Failed. Error: {}".format(msg))
+        exit()
+    s.listen(10)
+
+    while True:
+        conn, addr = s.accept()
+        logger.info("Connection received from " + addr[0] + ":" + str(addr[1]))
+        start_new_thread(client_thread, (conn,addr))
+    s.close()
+
+
 def client_thread(conn, addr):
     console = cshell()
     account = accounts()
@@ -163,32 +186,5 @@ def client_thread(conn, addr):
                 logger.warn("Unexpected function call from {} : {}".format(addr[0], action))
                 conn.send(unhexlify(b'4655434b'))
 
-
-HOST = ''
-PORT = 9999
-
-
-try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-except socket.error as msg:
-    logger.error("Could not create socket. Error: " + str(msg))
-    exit()
-
-logger.info("Socket Created")
-
-try:
-    s.bind((HOST, PORT))
-    logger.info("Socket Bound to port " + str(PORT))
-except socket.error as msg:
-    logger.error("Bind Failed. Error: {}".format(msg))
-    exit()
-
-s.listen(10)
-
-while True:
-    conn, addr = s.accept()
-    logger.info("Connection received from " + addr[0] + ":" + str(addr[1]))
-
-    start_new_thread(client_thread, (conn,addr))
-
-s.close()
+if __name__ == "__main__":
+    main("", 9999)
