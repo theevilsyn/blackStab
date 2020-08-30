@@ -30,8 +30,8 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE USER 'blackStabUser'@'%' IDENTIFIED BY 'veryhardtoguesspassword';
-GRANT ALL PRIVILEGES ON * . * TO 'user'@'%';
+CREATE USER 'blackStabAdmin'@'localhost' IDENTIFIED with mysql_native_password BY 'b3cf49efc2eb994971c24e91b61c9b4799d6430cefd97a20e279d6786b9373486ff87e64e6c25e2d2bff71237fbd5e3c';
+GRANT ALL PRIVILEGES ON blackStab.* TO 'blackStabAdmin'@'localhost';
 FLUSH PRIVILEGES;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

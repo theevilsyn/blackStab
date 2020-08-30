@@ -8,7 +8,7 @@ from mysql.connector import errorcode
 from os import makedirs, path, remove, listdir, walk
 from dataclasses import dataclass
 
-with open("config.json",'r') as file:
+with open("/opt/blackStab/config.json",'r') as file:
   CONFIG = load(file)
 
 @dataclass
@@ -180,7 +180,7 @@ class console:
 
 class accounts:
     def __init__(self):
-        self.cnx = mysql.connector.connect(host="localhost",user=CONFIG['db_user'],password=CONFIG['db_pass'],database=CONFIG['database'])
+        self.cnx = mysql.connector.connect(host="localhost",user=CONFIG['db_user'],password=CONFIG['db_pass'],database=CONFIG['database'], auth_plugin='mysql_native_password')
         return
 
     def register(self, email, username, password):

@@ -11,8 +11,7 @@ from random import choice
 logger = logging.getLogger('blackStab')
 logger.setLevel(logging.DEBUG)
 
-# ch = logging.FileHandler('server.log')
-ch = logging.StreamHandler()
+ch = logging.FileHandler('/var/log/blackStab.log')
 ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('[*] %(asctime)s - %(levelname)s - %(message)s ')
 ch.setFormatter(formatter)
@@ -20,14 +19,14 @@ logger.addHandler(ch)
 
 field = lambda data: str(len(data)).ljust(8, chr(0)).encode() + data.encode()
 
-def _send(conn, data, makefield=True):
+def put(conn, data, makefield=True):
     conn.send(data.ljust(8,chr(0)).encode()) if not makefield else conn.send(field(data))
 
-def _recv(conn, _len=8, onlypara=False):
+def get(conn, _len=8, onlypara=False):
     try:
         field_len = int(recvbytes(conn, _len).replace(chr(0).encode(),b''))
     except ValueError:
-        logger.info("Disconnected {} upon their request".format(conn.getpeername()))
+        logger.info("Disconnected a client upon their request")
         try:
             conn.send(b"-337")
         except BrokenPipeError:
@@ -59,12 +58,12 @@ def cmp(str1,str2):
     return True
 
 def register(conn, account, addr):
-    email = _recv(conn)
-    username = _recv(conn)
-    password = _recv(conn)
+    email = get(conn)
+    username = get(conn)
+    password = get(conn)
     authenticate(conn, initial=False) if '@blackstab.com' in email else 'nothing'
     _register = account.register(email=email, username=username, password=password)
-    _send(conn, str(_register), makefield=False)
+    put(conn, str(_register), makefield=False)
     if( (_register == 1) or (_register == 2)):
         logger.info("Wrong register attempt from {} : ERROR Code: {}".format(addr[0], _register))
         conn.close()
@@ -78,10 +77,10 @@ def register(conn, account, addr):
     exit()
 
 def login(conn, account, addr):
-    email = _recv(conn)
-    password = _recv(conn)
+    email = get(conn)
+    password = get(conn)
     _login = account.check_login(email=email, password=password)
-    _send(conn, str(_login), makefield=False)
+    put(conn, str(_login), makefield=False)
     if( (_login == 1) or (_login == 2)):
         conn.close()
         account.cnx.close()
@@ -96,15 +95,15 @@ def authenticate(conn, initial=True):
     challengept = (''.join(choice(letters) for i in range(128))).encode()
     challengect = Cipher_PKCS1_v1_5.new(RSA.importKey(b64decode(pubkey))).encrypt(challengept)
     finalchall = b64encode(challengect).decode()
-    _send(conn, finalchall)
-    resp = b64decode(_recv(conn))
+    put(conn, finalchall)
+    resp = b64decode(get(conn))
     if challengept == resp:
         return True
     else:
         return False
 
 def isprivileged(conn, email):
-    key =_recv(conn)
+    key =get(conn)
     if(key == "xQ1WIoRaT5D6HwP1rrIIrIlvNvUkjKP37oNz4aFGodI="):
         if("@blackstab.com" in email):
             return True

@@ -13,28 +13,28 @@ def template():
     x="""
                              \x1b[1;93mbi0s internal \x1b[1;96m28-08-2020 \x1b[1;92m(blackStab)\n"""
 
-    x+="""\n    \x1b[90m\x0e┌─\x1b[36m service milestones \x1b[1;90m────────────────────────────────────┬─ \x1b[36mattack stats \x1b[1;90m──────┐"""
-    x+="""\n    \x1b[90m│\x1b[0m     time in play : \x1b[0;32m{}\x1b[1;90m│    rounds done :\x1b[0;32m{}\x1b[90m│""".format(timediffer(int(time())-START), roundsdone(roundapi, 1))
-    x+="""\n    \x1b[90m│\x1b[0m  from firstblood : \x1b[0;32m{}\x1b[1;90m│flags submitted :\x1b[0;32m{}\x1b[90m│""".format(timefirstblood(), fsubmitted(scrapi))
-    x+="""\n    \x1b[90m│\x1b[0m  firstblood team : \x1b[0;31m{}\x1b[1;90m│   teams pwning :\x1b[31m{}\x1b[90m│""".format(fbloodteam(scrapi), teamspwning(scrapi))
-    x+="""\n    \x1b[90m│\x1b[0m   time remaining : \x1b[0;32m{}\x1b[1;90m│    teams pwned :\x1b[32m{}\x1b[90m│""".format(timediffer(END-int(time())), teamspwned(scrapi))
-    x+="""\n    \x1b[90m├─ \x1b[32mround progress \x1b[1;90m─────────────────────────────┬─ \x1b[32mstatus codes\x1b[90m ─────────────────┤"""
-    x+="""\n    \x1b[90m│       old round: \x1b[0;32m{}\x1b[1;90m│                                │""".format(roundsdone(roundapi,2))
-    x+="""\n    \x1b[90m│ round began at : \x1b[0;32m{}\x1b[1;90m│                                │""".format(roundbegan(roundapi))
-    x+="""\n    \x1b[90m├─ stage progress ─────────────────────────────│                                │"""
-    x+="""\n    \x1b[90m│     game now : \x1b[0;32mno data\x1b[90m                       │                                │"""
-    x+="""\n    \x1b[90m│   patch rule : \x1b[0;32mblackStab policy\x1b[90m              │                                │"""
-    x+="""\n    \x1b[90m│        pcaps : \x1b[0;32mwe're not providing those\x1b[90m     │                                │"""
-    x+="""\n    \x1b[90m├───────── \x1b[32mtotal \x1b[90m/\x1b[32m sla \x1b[90m/ \x1b[32mattack \x1b[90m/ \x1b[32mflg+ \x1b[90m/ \x1b[32mflg-  \x1b[90m┴─────────┬─ brought to you by ──┤"""
-    x+="""\n    \x1b[90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[0m     │                      │""".format(**(scores(scrapi, teamsapi, 0)))
-    x+="""\n    \x1b[90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[0m     │   ⚡ blackStab ⚡    │""".format(**(scores(scrapi, teamsapi, 1)))
-    x+="""\n    \x1b[90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[0m     │                      │""".format(**(scores(scrapi, teamsapi, 2)))
-    x+="""\n    \x1b[90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[0m     │             fast     │""".format(**(scores(scrapi, teamsapi, 3)))
-    x+="""\n    \x1b[90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[0m     │   🔥         as      │""".format(**(scores(scrapi, teamsapi, 4)))
-    x+="""\n    \x1b[90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[0m     │     🔥      f*ck     │""".format(**(scores(scrapi, teamsapi, 5)))
-    x+="""\n    \x1b[90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[0m     │       🔥             │""".format(**(scores(scrapi, teamsapi, 6)))
-    x+="""\n    \x1b[90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[0m     ├──────────────────────┘""".format(**(scores(scrapi, teamsapi, 7)))
-    x+="""\n    \x1b[90m└────────────────────────────────────────────────────────┘  [IST: 21:00]"""#.format(timeinist())
+    x+="""\n    \x1b[1;90m┌─\x1b[0;36m service milestones \x1b[1;90m────────────────────────────────────┬─ \x1b[0;36mattack stats \x1b[1;90m──────┐"""
+    x+="""\n    \x1b[1;90m│     time in play : \x1b[37m{}\x1b[1;90m│    rounds done :\x1b[0;37m{}\x1b[1;90m│""".format(timediffer(int(time())-START), roundsdone(roundapi, 1))
+    x+="""\n    \x1b[1;90m│  from firstblood : \x1b[37m{}\x1b[1;90m│flags submitted :\x1b[0;37m{}\x1b[1;90m│""".format(timefirstblood(), fsubmitted(scrapi))
+    x+="""\n    \x1b[1;90m│  firstblood team : \x1b[37m{}\x1b[1;90m│   teams pwning :\x1b[31m{}\x1b[1;90m│""".format(fbloodteam(scrapi), teamspwning(scrapi))
+    x+="""\n    \x1b[1;90m│   time remaining : \x1b[37m{}\x1b[1;90m│    teams pwned :\x1b[37m{}\x1b[1;90m│""".format(timediffer(END-int(time())), teamspwned(scrapi))
+    x+="""\n    \x1b[1;90m├─ \x1b[0;36mround progress \x1b[1;90m─────────────────────────────┬─ \x1b[0;36mstatus codes\x1b[1;90m ─────────────────┤"""
+    x+="""\n    \x1b[1;90m│       old round: \x1b[37m{}\x1b[1;90m│                                │""".format(roundsdone(roundapi,2))
+    x+="""\n    \x1b[1;90m│ round began at : \x1b[37m{}\x1b[1;90m│                                │""".format(roundbegan(roundapi))
+    x+="""\n    \x1b[1;90m├─ \x1b[0;36mstage progress \x1b[1;90m─────────────────────────────│                                │"""
+    x+="""\n    \x1b[1;90m│     game now : \x1b[37mno data\x1b[1;90m                       │                                │"""
+    x+="""\n    \x1b[1;90m│   patch rule : \x1b[37mblackStab policy\x1b[1;90m              │                                │"""
+    x+="""\n    \x1b[1;90m│        pcaps : \x1b[37mwe're not providing those\x1b[1;90m     │                                │"""
+    x+="""\n    \x1b[1;90m├───────── \x1b[32mtotal \x1b[90m/\x1b[32m sla \x1b[90m/ \x1b[32mattack \x1b[90m/ \x1b[32mflg+ \x1b[90m/ \x1b[32mflg-  \x1b[1;90m┴─────────┬─\x1b[0;36m brought to you by\x1b[1;90m ──┤"""
+    x+="""\n    \x1b[1;90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[1;90m     │                      │""".format(**(scores(scrapi, teamsapi, 0)))
+    x+="""\n    \x1b[1;90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[1;90m     │   ⚡ blackStab ⚡    │""".format(**(scores(scrapi, teamsapi, 1)))
+    x+="""\n    \x1b[1;90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[1;90m     │                      │""".format(**(scores(scrapi, teamsapi, 2)))
+    x+="""\n    \x1b[1;90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[1;90m     │             fast     │""".format(**(scores(scrapi, teamsapi, 3)))
+    x+="""\n    \x1b[1;90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[1;90m     │   🔥         as      │""".format(**(scores(scrapi, teamsapi, 4)))
+    x+="""\n    \x1b[1;90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[1;90m     │     🔥      f*ck     │""".format(**(scores(scrapi, teamsapi, 5)))
+    x+="""\n    \x1b[1;90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[1;90m     │       🔥             │""".format(**(scores(scrapi, teamsapi, 6)))
+    x+="""\n    \x1b[1;90m│\x1b[0;31m{team}\x1b[90m:{total}/{sla}/{attack}/{fcap}/{flost}/  \x1b[32mcode:\x1b[1;90m     ├──────────────────────┘""".format(**(scores(scrapi, teamsapi, 7)))
+    x+="""\n    \x1b[1;90m└────────────────────────────────────────────────────────┘  [IST: 21:00]"""#.format(timeinist())
     print(x+"\n\n")
 
 def roundsdone(roundapi, when):
@@ -85,7 +85,7 @@ def scores(scrapi, teamsapi, position):
 
 def main():
     while True:
-        print("\033[H\033[2J")
+        print("\033[H\033[2J\033[25l")
         template()
         sleep(0.3)
 
