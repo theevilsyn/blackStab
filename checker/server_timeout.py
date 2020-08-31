@@ -33,11 +33,11 @@ def register(io):
     username = gen_rand_str(random.randint(7, 13))
     email = username + "@gmail.com"
     password = gen_rand_str(random.randint(12, 15))
-    io.recvuntil("Enter Email: ")
+    recvuntil(io, "Enter Email: ")
     io.sendline(email)
-    io.recvuntil("Enter Username: ")
+    recvuntil(io, "Enter Username: ")
     io.sendline(username)
-    io.recvuntil("Enter Password: ")
+    recvuntil(io, "Enter Password: ")
     io.sendline(password)
 
     output = io.recvline()
@@ -47,9 +47,9 @@ def register(io):
         return (False, (email, password), output)
     
 def login(io, email, password):
-    io.recvuntil("Enter Email: ")
+    recvuntil(io, "Enter Email: ")
     io.sendline(email)
-    io.recvuntil("Enter Password: ")
+    recvuntil(io, "Enter Password: ")
     io.sendline(password)
 
     output = io.recvline()
@@ -59,26 +59,26 @@ def login(io, email, password):
         return (False, output)
 
 def create_vm(io, vm_name, vm_tag):
-    io.recvuntil(PROMPT)
+    recvuntil(io, PROMPT)
     io.sendline(b'1')
-    io.recvuntil("Enter VM Name: ")
+    recvuntil(io, "Enter VM Name: ")
     io.sendline(vm_name)
-    io.recvuntil("Enter VM Tag: ")
+    recvuntil(io, "Enter VM Tag: ")
     io.sendline(vm_tag)
 
-    io.recvuntil(PROMPT)
+    recvuntil(io, PROMPT)
     io.sendline(str(random.choice(range(5))+1))
 
-    io.recvuntil("Input >> ")
+    recvuntil(io, "Input >> ")
     secretkey = b64(gen_rand_str(64).encode()).decode()
     io.sendline( secretkey )
-    io.recvuntil('what shall I name this key? ')
+    recvuntil(io, 'what shall I name this key? ')
     keyname = gen_rand_str(7)
     io.sendline( keyname )
-    io.recvuntil("Choice >> ")
+    recvuntil(io, "Choice >> ")
     io.sendline("y")
 
-    output = io.recvuntil("//////////")
+    output = recvuntil(io, "//////////")
     if b"Successfully" in output:
         return (True, output, secretkey, keyname)
     else:
@@ -86,27 +86,27 @@ def create_vm(io, vm_name, vm_tag):
 
 
 def get_status_of_vm(io, vm_name):
-    io.recvuntil(PROMPT)
+    recvuntil(io, PROMPT)
     io.sendline(b'4')
-    io.recvuntil("Enter VM name: ")
+    recvuntil(io, "Enter VM name: ")
     io.sendline(vm_name)
-    io.recvuntil("VM Tag: ", timeout=3)
+    recvuntil(io, "VM Tag: ")
 
-    flag = io.recvuntil(" ").rstrip()
+    flag = recvuntil(io, " ").rstrip()
     flag = b64decode(flag)
     return flag
 
 
 def list_public_key(io, vm_name, secretkey, keyname):
-    io.recvuntil(PROMPT)
+    recvuntil(io, PROMPT)
     io.sendline(b'5')
-    io.recvuntil("Enter VM name: ")
+    recvuntil(io, "Enter VM name: ")
     io.sendline(vm_name)
-    io.recvuntil('Key name: ')
+    recvuntil(io, 'Key name: ')
     io.sendline(keyname)
 
     try:
-        io.recvuntil('Response:\n\n', timeout = 3)
+        recvuntil(io, 'Response:\n\n')
         key = io.recvline().rstrip()
         try:
             key = key.decode()
