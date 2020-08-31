@@ -9,6 +9,7 @@ from blackStab.cloud import accounts as manager
 def main(host, port):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
     except socket.error as msg:
         logger.error("Could not create socket. Error: " + str(msg))
         exit()
