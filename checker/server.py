@@ -126,7 +126,6 @@ def set_flag(ip,port,flag):
         client = process("./cloud-client")
         client = process("./cloud-client -ip={} -port={} -rapid-connect -register".format(ip, port), shell=True)
     except Exception as e:
-        print(str(e)) # FIXME: DAF
         state = checker.ServiceStatus.DOWN
         reason = str(e)
         status = checker.ServiceState(status = state, reason = reason)
@@ -259,17 +258,14 @@ class Checker(checker_grpc.CheckerServicer):
     
     def CheckService(self,request,context):
         try:
-            print("Calling get_flag") # FIXME
             service_state = get_flag(request.ip,request.port,
                             request.flag,request.token)
             print("Check Service {} -> {} : {}"
                     .format(request.ip,request.port,service_state.status))
             if service_state.status == checker.ServiceStatus.UP:
-                print("calling check_functionality") # FIXME
                 # if we can retrieve the flag, check if they have made an illegal patch
                 function_state = check_functionality(request.ip, request.port, request.token)
                 return function_state
-            print("Service state not Up") # FIXME
             return service_state
         except Exception as e:
             state = checker.ServiceStatus.CORRUPT
