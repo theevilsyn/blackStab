@@ -168,7 +168,7 @@ class console:
         vmnames = "\n\t" + '\n\t'.join(listdir(path.join(self.region.decode(), account.decode())))
         return vmnames
 
-    def masterlist(self):
+    def expandregion(self):
         vms = []
         for account in listdir(self.region):
             for name in listdir(path.join(self.region, account)):

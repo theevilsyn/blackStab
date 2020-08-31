@@ -174,7 +174,7 @@ def onConnect(conn, addr):
 
             elif(cmp(action, 'expandRegion')):
                 logger.info("{} requested {} function".format(addr[0], action))
-                allstatus = console.masterlist()
+                allstatus = console.expandregion()
                 if(isprivileged(conn, email)):
                    put(conn, allstatus)
                 else:
