@@ -16,6 +16,8 @@ PORT = 9999
 COLOR_RESET = b"\x1b[0m"
 PROMPT = b'Your Choice >> ' + COLOR_RESET
 
+
+context.log_level = "debug"
 def gen_rand_str(length):
     return ''.join(random.SystemRandom()
                    .choice(string.ascii_letters + string.digits)
@@ -124,8 +126,13 @@ def set_flag(ip,port,flag):
     context.log_level="error"
     try:
         client = process("./cloud-client")
+        client.close()
         client = process("./cloud-client -ip={} -port={} -rapid-connect -register".format(ip, port), shell=True)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.DOWN
         reason = str(e)
         status = checker.ServiceState(status = state, reason = reason)
@@ -135,6 +142,10 @@ def set_flag(ip,port,flag):
     try:
         status, (email, password), reason = register(client)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.DOWN
         reason = "Service Unreachable, unable to register"
         status = checker.ServiceState(status = state, reason = reason)
@@ -143,6 +154,10 @@ def set_flag(ip,port,flag):
     try:
         client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.DOWN
         reason = str(e)
         status = checker.ServiceState(status = state, reason = reason)
@@ -152,6 +167,10 @@ def set_flag(ip,port,flag):
     try:
         status, reason = login(client, email, password)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.MUMBLE
         reason = "Unable to Login: " + str(e)
         status = checker.ServiceState(status = state, reason = reason)
@@ -162,7 +181,10 @@ def set_flag(ip,port,flag):
         status, reason, secretkey, keyname = create_vm(client, token, flag)
         
     except Exception as e:
-        client.close()
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.MUMBLE
         reason = "Unable to create VM: " + str(e)
         status = checker.ServiceState(status = state, reason = reason)
@@ -177,6 +199,7 @@ def get_flag(ip,port,flag,flag_token):
     context.log_level="error"
     try:
         client = process("./cloud-client")
+        client.close()
         client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
     except Exception as e:
         state = checker.ServiceStatus.DOWN
@@ -207,6 +230,10 @@ def get_flag(ip,port,flag,flag_token):
             return checker.ServiceState(status = checker.ServiceStatus.CORRUPT,
                                             reason = "Unable to retrive flag: flag does not match")
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.MUMBLE
         reason = "Unable to retrive the flag" + str(e)
         return checker.ServiceState(status = state, reason = reason)
@@ -216,6 +243,7 @@ def check_functionality(ip, port, flag_token):
 
     try:
         client = process("./cloud-client")
+        client.close()
         client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
     except Exception as e:
         state = checker.ServiceStatus.DOWN
