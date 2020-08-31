@@ -123,16 +123,24 @@ def list_public_key(io, vm_name, secretkey, keyname):
 def set_flag(ip,port,flag):
     context.log_level="error"
     try:
+        client = process("./cloud-client")
         client = process("./cloud-client -ip={} -port={} -rapid-connect -register".format(ip, port), shell=True)
     except Exception as e:
+        print(str(e)) # FIXME: DAF
         state = checker.ServiceStatus.DOWN
         reason = str(e)
         status = checker.ServiceState(status = state, reason = reason)
         return (status, "")
-
+    
     # Register a new user
-    status, (email, password), reason = register(client)
-
+    try:
+        status, (email, password), reason = register(client)
+    except Exception as e:
+        state = checker.ServiceStatus.DOWN
+        reason = "Service Unreachable, unable to register"
+        status = checker.ServiceState(status = state, reason = reason)
+        return (status, "")
+    
     try:
         client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
     except Exception as e:
@@ -142,8 +150,14 @@ def set_flag(ip,port,flag):
         return (status, "")
     
     # login and plant flag
-    status, reason = login(client, email, password)
-    
+    try:
+        status, reason = login(client, email, password)
+    except Exception as e:
+        state = checker.ServiceStatus.MUMBLE
+        reason = "Unable to Login: " + str(e)
+        status = checker.ServiceState(status = state, reason = reason)
+        return (status, "")
+
     token = gen_rand_str(16)
     try: # to plant the flag
         status, reason, secretkey, keyname = create_vm(client, token, flag)
@@ -151,7 +165,7 @@ def set_flag(ip,port,flag):
     except Exception as e:
         client.close()
         state = checker.ServiceStatus.MUMBLE
-        reason = str(e)
+        reason = "Unable to create VM: " + str(e)
         status = checker.ServiceState(status = state, reason = reason)
         return (status,"")
     
@@ -162,47 +176,48 @@ def set_flag(ip,port,flag):
 
 def get_flag(ip,port,flag,flag_token):
     context.log_level="error"
-
     try:
+        client = process("./cloud-client")
         client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
     except Exception as e:
         state = checker.ServiceStatus.DOWN
         reason = str(e)
         return checker.ServiceState(status = state, reason = reason)
     
-    email, password, token, secretkey, keyname = flag_token.split(":")
-
-    status, reason = login(client, email, password)
-
     try:
-
+        email, password, token, secretkey, keyname = flag_token.split(":")
+    except Exception as e:
+        state = checker.ServiceStatus.CORRUPT
+        reason = "Ill formated token string provided: " + str(e)
+        return checker.ServiceState(status = state, reason = reason)
+    
+    try:
+        login_status, reason = login(client, email, password)
+        assert login_status == True, "Login failed" + reason
+    except Exception as e:
+        state = checker.ServiceStatus.MUMBLE
+        reason = "Unable to Login: " + str(e)
+        return  checker.ServiceState(status = state, reason = reason)
+    try:
         recv_flag = get_status_of_vm(client, token)
-        if not type(recv_flag) == type(flag):
-            try:
-                recv_flag = recv_flag.encode()
-            except:
-                pass
-            try:
-                flag = flag.encode()
-            except:
-                pass
         client.close()
-        if recv_flag == flag:
+        if recv_flag.decode() == flag:
             return checker.ServiceState(status = checker.ServiceStatus.UP,
                                             reason = "")
         else:
             return checker.ServiceState(status = checker.ServiceStatus.CORRUPT,
-                                            reason = "Unable to retrive flag")
+                                            reason = "Unable to retrive flag: flag does not match")
     except Exception as e:
-        client.close()
         state = checker.ServiceStatus.MUMBLE
-        reason = str(e)
+        reason = "Unable to retrive the flag" + str(e)
         return checker.ServiceState(status = state, reason = reason)
 
 def check_functionality(ip, port, flag_token):
     context.log_level="error"
 
+    print("cf just in") # FIXME
     try:
+        client = process("./cloud-client")
         client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
     except Exception as e:
         state = checker.ServiceStatus.DOWN
@@ -238,22 +253,28 @@ class Checker(checker_grpc.CheckerServicer):
         status, token = set_flag(request.ip,request.port,flag)
         print("Plant Flag {} -> {} : {} "
                 .format(request.ip,request.port,status))
-        return checker.FlagResponse(status = status,
+        return checker.FlagResponse(state = status,
                                     flag=flag,
                                     token=token)
     
     def CheckService(self,request,context):
-        service_state = get_flag(request.ip,request.port,
-                        request.flag,request.token)
-        print("Check Service {} -> {} : {}"
-                .format(request.ip,request.port,service_state.state))
-        
-        if service_state.status == checker.ServiceStatus.UP:
-            # if we can retrieve the flag, check if they have made an illegal patch
-            function_state = check_functionality(request.ip, request.port, request.token)
-            return function_state
-        
-        return service_state
+        try:
+            print("Calling get_flag") # FIXME
+            service_state = get_flag(request.ip,request.port,
+                            request.flag,request.token)
+            print("Check Service {} -> {} : {}"
+                    .format(request.ip,request.port,service_state.status))
+            if service_state.status == checker.ServiceStatus.UP:
+                print("calling check_functionality") # FIXME
+                # if we can retrieve the flag, check if they have made an illegal patch
+                function_state = check_functionality(request.ip, request.port, request.token)
+                return function_state
+            print("Service state not Up") # FIXME
+            return service_state
+        except Exception as e:
+            state = checker.ServiceStatus.CORRUPT
+            reason = "Unable to Check Service: " + str(e)
+            return checker.ServiceState(status = state, reason = reason)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
