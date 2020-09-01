@@ -50,6 +50,22 @@ def register(io):
     else:
         return (False, (email, password), output)
     
+def admin_register(io):
+    username = gen_rand_str(random.randint(7, 13))
+    email = username + "@blackstab.com"
+    password = gen_rand_str(random.randint(12, 15))
+    io.recvuntil("Enter Email: ")
+    io.sendline(email)
+    io.recvuntil("Enter Username: ")
+    io.sendline(username)
+    io.recvuntil("Enter Password: ")
+    io.sendline(password)
+
+    output = io.recvline()
+    if b'Registration Successful' in output:
+        return (True, (email, password), output)
+    else:
+        return (False, (email, password), output)
 def login(io, email, password):
     io.recvuntil("Enter Email: ")
     io.sendline(email)
@@ -123,6 +139,18 @@ def list_public_key(io, vm_name, secretkey, keyname):
             return (False, "Wrong key: {}".format(key))
     except:
         return (False, "Unable to get public key")
+
+def list_recent_vms(io):
+    io.recvuntil(PROMPT)
+    io.sendline(b'8')
+    io.recvuntil("Enter masterkey: ")
+    io.sendline("xQ1WIoRaT5D6HwP1rrIIrIlvNvUkjKP37oNz4aFGodI=")
+    output = io.recvuntil(PROMPT)
+    
+    if b"VM Name" in output and b"VM Tag" in output:
+        return (True, "expand Region verified")
+    else:
+        return (False, "Cannot call expand region")
 
 def set_flag(ip,port,flag):
     context.log_level="error"
@@ -288,6 +316,78 @@ def check_functionality(ip, port, flag_token):
         return checker.ServiceState(status = state, reason = reason)
     
 
+def check_admin_functionality(ip, port, flag_token):
+    context.log_level="error"
+    
+    try:
+        client = process("./admin-client -ip={} -port={} -rapid-connect -register".format(ip, port), shell=True, close_fds=True)
+    except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
+        state = checker.ServiceStatus.DOWN
+        reason = str(e)
+        status = checker.ServiceState(status = state, reason = reason)
+        return (status, "")
+    
+    # Register a new user
+    try:
+        status, (email, password), reason = admin_register(client)
+    except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
+        state = checker.ServiceStatus.DOWN
+        reason = "Service Unreachable, unable to register"
+        status = checker.ServiceState(status = state, reason = reason)
+        return (status, "")
+    
+    try:
+        client = process("./admin-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True, close_fds=True)
+    except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
+        state = checker.ServiceStatus.DOWN
+        reason = str(e)
+        status = checker.ServiceState(status = state, reason = reason)
+        return (status, "")
+    
+    # login and plant flag
+    try:
+        status, reason = login(client, email, password)
+    except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
+        state = checker.ServiceStatus.MUMBLE
+        reason = "Unable to Login: " + str(e)
+        status = checker.ServiceState(status = state, reason = reason)
+        return (status, "")
+
+    try:
+
+        status, reason = list_recent_vms(client)
+        client.close()
+        if status == True:
+            return checker.ServiceState(status = checker.ServiceStatus.UP,
+                                            reason = "")
+        else:
+            return checker.ServiceState(status = checker.ServiceStatus.MUMBLE,
+                                            reason = "Unable to expand Region" + reason)
+    except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
+        client.close()
+        state = checker.ServiceStatus.MUMBLE
+        reason = "Unable to expandRegion" + str(e)
+        return checker.ServiceState(status = state, reason = reason)
 
 class Checker(checker_grpc.CheckerServicer):
     def PlantFlag(self,request,context):
@@ -317,7 +417,12 @@ class Checker(checker_grpc.CheckerServicer):
             if service_state.status == checker.ServiceStatus.UP:
                 # if we can retrieve the flag, check if they have made an illegal patch
                 function_state = check_functionality(request.ip, request.port, request.token)
-                return function_state
+                #return function_state
+                service_state = function_state
+            if service_state.status == checker.ServiceStatus.UP:
+                # If functionality is up, check if admin feature is working
+                admin_state = check_admin_functionality(request.ip, request.port, request.token)
+                service_state = admin_state
             return service_state
         except Exception as e:
             state = checker.ServiceStatus.CORRUPT
