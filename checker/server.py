@@ -272,7 +272,7 @@ class Checker(checker_grpc.CheckerServicer):
             return checker.ServiceState(status = state, reason = reason)
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=(('gprc.so_reuseport', 1),))
     checker_grpc.add_CheckerServicer_to_server(Checker(), server)
     port = 50051
     print("Launching Server on port :: {}".format(port))
