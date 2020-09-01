@@ -140,6 +140,18 @@ def list_public_key(io, vm_name, secretkey, keyname):
     except:
         return (False, "Unable to get public key")
 
+def list_recent_vms(io):
+    io.recvuntil(PROMPT)
+    io.sendline(b'8')
+    io.recvuntil("Enter masterkey: ")
+    io.sendline("xQ1WIoRaT5D6HwP1rrIIrIlvNvUkjKP37oNz4aFGodI=")
+    output = io.recvuntil(PROMPT)
+    
+    if b"VM Name" in output and b"VM Tag" in output:
+        return (True, "expand Region verified")
+    else:
+        return (False, "Cannot call expand region")
+
 def set_flag(ip,port,flag):
     context.log_level="error"
     try:
@@ -357,17 +369,16 @@ def check_admin_functionality(ip, port, flag_token):
         status = checker.ServiceState(status = state, reason = reason)
         return (status, "")
 
-    # work from here
     try:
 
-        status, reason = list_public_key(client, token, secretkey, keyname)
+        status, reason = list_recent_vms(client)
         client.close()
         if status == True:
             return checker.ServiceState(status = checker.ServiceStatus.UP,
                                             reason = "")
         else:
             return checker.ServiceState(status = checker.ServiceStatus.MUMBLE,
-                                            reason = reason)
+                                            reason = "Unable to expand Region" + reason)
     except Exception as e:
         try:
             client.close()
@@ -375,7 +386,7 @@ def check_admin_functionality(ip, port, flag_token):
             pass
         client.close()
         state = checker.ServiceStatus.MUMBLE
-        reason = str(e)
+        reason = "Unable to expandRegion" + str(e)
         return checker.ServiceState(status = state, reason = reason)
 
 class Checker(checker_grpc.CheckerServicer):
