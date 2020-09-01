@@ -12,10 +12,14 @@ from pwn import *
 import checker_pb2 as checker
 import checker_pb2_grpc as checker_grpc
 
+import gc
+
 PORT = 9999
 COLOR_RESET = b"\x1b[0m"
 PROMPT = b'Your Choice >> ' + COLOR_RESET
 
+
+context.log_level = "debug"
 def gen_rand_str(length):
     return ''.join(random.SystemRandom()
                    .choice(string.ascii_letters + string.digits)
@@ -123,9 +127,12 @@ def list_public_key(io, vm_name, secretkey, keyname):
 def set_flag(ip,port,flag):
     context.log_level="error"
     try:
-        client = process("./cloud-client")
-        client = process("./cloud-client -ip={} -port={} -rapid-connect -register".format(ip, port), shell=True)
+        client = process("./cloud-client -ip={} -port={} -rapid-connect -register".format(ip, port), shell=True, close_fds=True)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.DOWN
         reason = str(e)
         status = checker.ServiceState(status = state, reason = reason)
@@ -135,14 +142,22 @@ def set_flag(ip,port,flag):
     try:
         status, (email, password), reason = register(client)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.DOWN
         reason = "Service Unreachable, unable to register"
         status = checker.ServiceState(status = state, reason = reason)
         return (status, "")
     
     try:
-        client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
+        client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True, close_fds=True)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.DOWN
         reason = str(e)
         status = checker.ServiceState(status = state, reason = reason)
@@ -152,6 +167,10 @@ def set_flag(ip,port,flag):
     try:
         status, reason = login(client, email, password)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.MUMBLE
         reason = "Unable to Login: " + str(e)
         status = checker.ServiceState(status = state, reason = reason)
@@ -162,7 +181,10 @@ def set_flag(ip,port,flag):
         status, reason, secretkey, keyname = create_vm(client, token, flag)
         
     except Exception as e:
-        client.close()
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.MUMBLE
         reason = "Unable to create VM: " + str(e)
         status = checker.ServiceState(status = state, reason = reason)
@@ -176,9 +198,12 @@ def set_flag(ip,port,flag):
 def get_flag(ip,port,flag,flag_token):
     context.log_level="error"
     try:
-        client = process("./cloud-client")
-        client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
+        client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True,close_fds=True)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.DOWN
         reason = str(e)
         return checker.ServiceState(status = state, reason = reason)
@@ -186,6 +211,10 @@ def get_flag(ip,port,flag,flag_token):
     try:
         email, password, token, secretkey, keyname = flag_token.split(":")
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.CORRUPT
         reason = "Ill formated token string provided: " + str(e)
         return checker.ServiceState(status = state, reason = reason)
@@ -194,6 +223,10 @@ def get_flag(ip,port,flag,flag_token):
         login_status, reason = login(client, email, password)
         assert login_status == True, "Login failed" + reason
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.MUMBLE
         reason = "Unable to Login: " + str(e)
         return  checker.ServiceState(status = state, reason = reason)
@@ -207,6 +240,10 @@ def get_flag(ip,port,flag,flag_token):
             return checker.ServiceState(status = checker.ServiceStatus.CORRUPT,
                                             reason = "Unable to retrive flag: flag does not match")
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.MUMBLE
         reason = "Unable to retrive the flag" + str(e)
         return checker.ServiceState(status = state, reason = reason)
@@ -216,8 +253,13 @@ def check_functionality(ip, port, flag_token):
 
     try:
         client = process("./cloud-client")
-        client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True)
+        client.close()
+        client = process("./cloud-client -ip={} -port={} -rapid-connect -login".format(ip, port), shell=True, close_fds=True)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         state = checker.ServiceStatus.DOWN
         reason = str(e)
         return checker.ServiceState(status = state, reason = reason)
@@ -238,6 +280,10 @@ def check_functionality(ip, port, flag_token):
             return checker.ServiceState(status = checker.ServiceStatus.MUMBLE,
                                             reason = reason)
     except Exception as e:
+        try:
+            client.close()
+        except:
+            pass
         client.close()
         state = checker.ServiceStatus.MUMBLE
         reason = str(e)
@@ -247,14 +293,23 @@ def check_functionality(ip, port, flag_token):
 
 class Checker(checker_grpc.CheckerServicer):
     def PlantFlag(self,request,context):
-        flag = "bi0s{" + gen_rand_str(26) + "}"
-        status, token = set_flag(request.ip,request.port,flag)
-        print("Plant Flag {} -> {} : {} "
-                .format(request.ip,request.port,status))
-        return checker.FlagResponse(state = status,
-                                    flag=flag,
-                                    token=token)
-    
+        try:
+
+            flag = "bi0s{" + gen_rand_str(26) + "}"
+            status, token = set_flag(request.ip,request.port,flag)
+            print("Plant Flag {} -> {} : {} "
+                    .format(request.ip,request.port,status))
+            return checker.FlagResponse(state = status,
+                                        flag=flag,
+                                        token=token)
+        except Exception as e:
+            reason = "Unable to Plant Flag: " + str(e)
+            state = checker.ServiceState(checker.ServiceStatus.CORRUPT, reason)
+            return checker.FlagResponse(state = state,
+                                        flag = "",
+                                        token = "")
+
+
     def CheckService(self,request,context):
         try:
             service_state = get_flag(request.ip,request.port,
