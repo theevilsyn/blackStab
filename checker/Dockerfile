@@ -19,5 +19,6 @@ COPY proto /checker/proto/
 COPY server.py /checker/server.py
 COPY admin-client /checker/admin-client
 COPY cloud-client /checker/cloud-client
+RUN ulimit -n 10000
 RUN python -m grpc_tools.protoc -I /checker/proto --python_out=. --grpc_python_out=. checker.proto
 ENTRYPOINT ["python","/checker/server.py"]
