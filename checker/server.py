@@ -12,24 +12,7 @@ from pwn import *
 import checker_pb2 as checker
 import checker_pb2_grpc as checker_grpc
 
-"""
-# Memleak checks
-"""
-import resource
-import fcntl
 import os
-
-def get_open_fds():
-    fds = []
-    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-    for fd in range(0, soft):
-        try:
-            flags = fcntl.fcntl(fd, fcntl.F_GETFD)
-        except IOError:
-            continue
-        fds.append(fd)
-    return fds
-
 
 PORT = 9999
 COLOR_RESET = b"\x1b[0m"
@@ -186,6 +169,7 @@ def set_flag(ip,port,flag):
     # Register a new user
     try:
         status, (email, password), reason = register(client)
+        client.close()
     except Exception as e:
         try:
             client.close()
@@ -311,7 +295,6 @@ def check_functionality(ip, port, flag_token):
 
     status, reason = login(client, email, password)
     
-
     try:
 
         status, reason = list_public_key(client, token, secretkey, keyname)
@@ -351,6 +334,7 @@ def check_admin_functionality(ip, port, flag_token):
     # Register a new user
     try:
         status, (email, password), reason = admin_register(client)
+        client.close()
     except Exception as e:
         try:
             client.close()
@@ -409,18 +393,10 @@ def check_admin_functionality(ip, port, flag_token):
 class Checker(checker_grpc.CheckerServicer):
     def PlantFlag(self,request,context):
         try:
-            init_fd = get_open_fds()
-
             flag = "bi0s{" + gen_rand_str(26) + "}"
             status, token = set_flag(request.ip,request.port,flag)
             print("Plant Flag {} -> {} : {} "
                     .format(request.ip,request.port,status))
-            
-            end_fd = get_open_fds()
-            diff_fd = set(end_fd) - set(init_fd)
-            print(f"Closing {len(diff_fd)} stale fds ...")
-            for fd in diff_fd:
-                os.close(fd)
             
             return checker.FlagResponse(state = status,
                                         flag=flag,
@@ -435,8 +411,6 @@ class Checker(checker_grpc.CheckerServicer):
 
     def CheckService(self,request,context):
         try:
-            init_fd = get_open_fds()
-            
             service_state = get_flag(request.ip,request.port,
                             request.flag,request.token)
             print("Check Service {} -> {} : {}"
@@ -451,12 +425,6 @@ class Checker(checker_grpc.CheckerServicer):
                 admin_state = check_admin_functionality(request.ip, request.port, request.token)
                 service_state = admin_state
             
-            end_fd = get_open_fds()
-            diff_fd = set(end_fd) - set(init_fd)
-            print(f"Closing {len(diff_fd)} stale fds ...")
-            for fd in diff_fd:
-                os.close(fd)
-            
             return service_state
         except Exception as e:
             state = checker.ServiceStatus.CORRUPT
@@ -468,6 +436,7 @@ def serve():
     checker_grpc.add_CheckerServicer_to_server(Checker(), server)
     port = 50051
     print("Launching Server on port :: {}".format(port))
+    #print("[+] Debug fds at: \nls -la /proc/{}/fd".format(os.getpid()))
     server.add_insecure_port('[::]:{}'.format(port))
     server.start()
     server.wait_for_termination()
